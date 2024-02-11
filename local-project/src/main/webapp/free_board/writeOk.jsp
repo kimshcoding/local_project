@@ -7,7 +7,7 @@
 <%
     request.setCharacterEncoding("UTF-8");
 
-    String directory = "C:\\Users\\migue\\eclipse-workspace\\local-project\\src\\main\\webapp\\upload";
+    String directory = "C:\\Users\\migue\\git\\local_project\\local-project\\src\\main\\webapp\\upload";
     int sizeLimit = 100 * 1024 * 1024; // 100mb 제한
 
     MultipartRequest multi = new MultipartRequest(request, directory, sizeLimit, "UTF-8", new DefaultFileRenamePolicy());

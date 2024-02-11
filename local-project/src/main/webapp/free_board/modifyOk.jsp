@@ -18,7 +18,7 @@
 	}
 	
 	// 업로드된 파일이 저장될 디렉토리 경로를 지정합니다. 이 경로는 프로젝트의 실제 파일 시스템 경로입니다.
-		String directory = "C:\\Users\\migue\\eclipse-workspace\\local-project\\src\\main\\webapp\\upload";
+		String directory = "C:\\Users\\migue\\git\\local_project\\local-project\\src\\main\\webapp\\upload";
 		int sizeLimit = 100*1024*1024;//100mb 제한
 
 		MultipartRequest multi = new MultipartRequest(request 	// 클라이언트의 HTTP 요청 객체입니다.
@@ -39,7 +39,7 @@
  		boardId= Integer.parseInt(multi.getParameter("board_id"));
  	}
 	board.setBoardId(boardId);
- 	System.out.println("boardId:"+boardId);
+ 	
  	%>
 
 	<%
@@ -52,7 +52,6 @@
 	if(multi.getParameter("file_ord")!=null && !multi.getParameter("file_ord").equals("")){
 		fileOrd = Integer.parseInt(multi.getParameter("file_ord"));
 	}
-	System.out.println("file_ord:"+fileOrd);
 	
 	
 	Connection conn = null;

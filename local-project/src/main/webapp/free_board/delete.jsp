@@ -34,7 +34,7 @@
 		
 		String sql = "UPDATE board      "
 				   + "   SET delyn = 'Y'"
-				   + " WHERE board_id = ?  AND type = 'F'";  //Q게시글만 삭제
+				   + " WHERE board_id = ?  AND type = 'F'";  // F 게시글만 삭제
 		
 		psmt = conn.prepareStatement(sql);
 		psmt.setInt(1, boardId);

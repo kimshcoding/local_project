@@ -251,7 +251,6 @@ session.setAttribute("login",mlogin);
      	}else{
     %>	<span id="target"></span>
     	<span id="del"><button type="button" onclick="boardFileDeleteFn(this)" class="btn btn-warning">추가</button></span>
-    	<%=bf.getFileOriginNm()%>
     	<%
      	}
     	%>

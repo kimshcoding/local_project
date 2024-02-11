@@ -87,7 +87,7 @@ if (member == null) {
         <div class="row">
             <div class="col-md-12">
 
-                <h2 class="text-center">글쓰기</h2>
+                <h2 class="text-center">새 글 작성</h2>
                 <div class="text-right">
 					<button onclick="location.href='list.jsp'" class="btn btn-secondary">목록</button>          
                 </div><br>

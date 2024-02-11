@@ -15,6 +15,8 @@ public class Board extends Member{
 	private int hit; 			// 조회수
 	private char delyn; 		// 삭제여부
 	private char type;			// 게시판 구분
+	
+	
 	public int getBoardId() {
 		return boardId;
 	}

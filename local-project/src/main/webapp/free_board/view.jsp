@@ -15,6 +15,9 @@ Member member = (Member) session.getAttribute("login");
 
 String boardIdParam = request.getParameter("board_id");
 
+int before = 0; // 이전글 변수 초기화
+int after = 0; // 다음글 변수 초기화
+
 int boardId = 0;
 if (boardIdParam != null && !boardIdParam.equals("")) {
 	boardId = Integer.parseInt(boardIdParam);
@@ -31,13 +34,59 @@ String pass = "1234";
 
 Board board = new Board(); // 자유게시판 결과를 담을 객체
 List<BoardFileDetail> bflist = new ArrayList<BoardFileDetail>(); // 게시글 첨부파일 목록 변수
+List<Comment> clist = new ArrayList<Comment>(); // 댓글 목록 변수
+List<Reply> rlist = new ArrayList<Reply>(); // 답글 목록 변수
 
 try {
+	//------------------------------- 쿠키 생성 -----------------------------------------
+	boolean isBnoCookie = false; // 게시글 번호에 대한 쿠키가 있는지 여부를 나타내는 변수 초기화
+	Cookie[] cookies = request.getCookies(); // 현재 요청으로부터 모든 쿠키를 가져옴
+
+	// 모든 쿠키를 반복하면서 게시글 번호에 대한 쿠키가 있는지 확인
+	for (Cookie tempCookie : cookies) {
+		if (tempCookie.getName().equals("board_id" + boardId)) {
+	isBnoCookie = true; // 해당 게시글 번호에 대한 쿠키가 있다면 변수를 true로 설정하고 반복문 종료
+	break;
+		}
+	}
+	// 해당 게시글 번호에 대한 쿠키가 없다면 새로운 쿠키를 생성하여 응답에 추가
+	if (!isBnoCookie) {
+		Cookie cookie = new Cookie("board_id" + boardId, "ok"); // 게시글 번호에 대한 쿠키 생성
+		cookie.setMaxAge(60 * 60 * 24); // 쿠키의 유효 기간을 하루로 설정
+		response.addCookie(cookie); // 응답에 쿠키 추가
+	}
+	//------------------------------- 쿠키 생성 -----------------------------------------
+
 	Class.forName("com.mysql.cj.jdbc.Driver");
 	conn = DriverManager.getConnection(url, user, pass);
 
+	String sql = "";
+
+	//------------------------- 쿠키를 사용하여 조회수 중복 방지 -------------------------------------------------
+
+	// 게시글 번호에 대한 쿠키가 없는 경우에 해당하는 조건문입니다. 
+	// 이 조건문은 쿠키가 없을 때 조회수를 증가시키는 작업을 수행
+
+	if (!isBnoCookie) {
+
+		// UPDATE 문을 사용하여 board 테이블에서 hit(조회수)를 1 증가시키는 쿼리입니다. 
+		// 조건은 게시글 번호(bno)가 특정한 값일 때입니다.
+		sql = "UPDATE board " + "	  SET hit = hit+1" + " WHERE board_id = ? ";
+
+		psmt = conn.prepareStatement(sql);
+
+		psmt.setInt(1, boardId); // PreparedStatement에 쿼리의 파라미터로 게시글 번호(bno)를 설정합니다.
+
+		psmt.executeUpdate(); // 조회수를 1 증가시키는 쿼리를 실행하므로 해당 게시글의 조회수가 증가됩니다.
+
+		if (psmt != null)
+	psmt.close();
+	}
+
+	//------------------------- 쿠키를 사용하여 조회수 중복 방지 -------------------------------------------------
+
 	//---------------------- 자유 게시판 목록 데이터 가져오기 ---------------------------------------------
-	String sql = "SELECT board_Id, content, title, m.nicknm, b.created_at, b.hit " + "  FROM board b      "
+	sql = "SELECT board_Id, content, title, m.nicknm, b.created_at, b.hit " + "  FROM board b      "
 	+ " INNER JOIN member m" + " ON b.created_by = m.member_id   " + " WHERE b.board_id = ? AND b.type = 'F'"; // 자유게시판 F 데이터만 가져옴!
 
 	psmt = conn.prepareStatement(sql);
@@ -54,6 +103,40 @@ try {
 
 	}
 	//---------------------- 자유 게시판 목록 데이터 가져오기 ---------------------------------------------
+
+	//------------------------ 이전글 board_id 가져오기 (페이징용)------------------------------------------------------
+	if (psmt != null)
+		psmt.close();
+	if (rs != null)
+		rs.close();
+
+	sql = "SELECT * FROM board WHERE type = 'F' and delyn='N' and board_id < ? order by board_id DESC limit 0,1 "; // ? -> 현재 페이지 board_id
+	//"board" 테이블에서 "type"이 'F', "delyn"이 'N'이며 "board_id"가 18보다 작은 행을 내림차순으로 정렬하고, 그 중 첫 번째 행만 반환
+	psmt = conn.prepareStatement(sql);
+	psmt.setInt(1, boardId);
+	rs = psmt.executeQuery();
+
+	if (rs.next()) {
+		before = rs.getInt("board_id");
+	}
+	//------------------------ 이전글 board_id 가져오기 (페이징용)------------------------------------------------------
+
+	//------------------------ 다음글 board_id 가져오기 (페이징용)------------------------------------------------------
+	if (psmt != null)
+		psmt.close();
+	if (rs != null)
+		rs.close();
+
+	sql = "SELECT * FROM board WHERE type = 'F' and delyn='N' and board_id > ? order by board_id ASC limit 0,1 "; // ? -> 현재 페이지 bno
+
+	psmt = conn.prepareStatement(sql);
+	psmt.setInt(1, boardId);
+	rs = psmt.executeQuery();
+
+	if (rs.next()) {
+		after = rs.getInt("board_id");
+	}
+	//------------------------ 다음글 board_id 가져오기 (페이징용)------------------------------------------------------
 
 	//---------------------- 첨부 파일 데이터 가져오기 ---------------------------------------------
 
@@ -81,7 +164,56 @@ try {
 
 		bflist.add(bf);
 	}
+	//---------------------- 첨부 파일 데이터 가져오기 ---------------------------------------------
+	if (psmt != null)
+		psmt.close();
+	if (rs != null)
+		rs.close();
 
+	//------------------------------- 댓글 목록 가져오기 ------------------------------------------------------------
+	sql = " SELECT c.comment_id, m.nicknm, c.content, c.created_at,  ce.modified_at " + "     FROM comment c "
+	+ "     INNER JOIN member m ON c.created_by = m.member_id "
+	+ "     LEFT JOIN comment_edit ce ON c.comment_id = ce.comment_id "
+	+ "     WHERE c.board_id = ? AND c.delyn = 'N' " // 삭제된 댓글은 화면 출력 안됨!
+	+ "     ORDER BY c.comment_id DESC"; // <--- 업데이트를 해도 최신 댓글의 내림차순이 유지됨
+
+	// reply 테이블과 member 테이블을 조인하여 해당 게시글 (r.bno = ?)에 대한 
+	// 댓글 정보와 작성자 정보를 가져오는 쿼리입니다.
+
+	psmt = conn.prepareStatement(sql);
+	psmt.setInt(1, boardId);
+	// ?를 게시글 번호 (board.getBno())로 설정합니다.
+	rs = psmt.executeQuery();
+	//쿼리를 실행하고 결과를 ResultSet 객체에 저장합니다.
+	while (rs.next()) {
+		Comment comment = new Comment();
+		comment.setCommentId(rs.getInt("comment_id"));
+		comment.setNicknm(rs.getString("nicknm"));
+		comment.setContent(rs.getString("content"));
+		comment.setCreatedAt(rs.getString("created_at"));
+		comment.setModifiedAt(rs.getString("modified_at"));
+
+		clist.add(comment);
+	}
+
+	//------------------------------- 답글 목록 가져오기 ------------------------------------------------------------
+	sql = "SELECT created_at, content, comment_id, reply_id from reply WHERE board_id = ? AND delyn = 'N' ";
+	
+	psmt = conn.prepareStatement(sql);
+	psmt.setInt(1, boardId);
+	rs = psmt.executeQuery();
+	
+	while (rs.next()){
+		Reply reply = new Reply();
+		reply.setCreatedAt(rs.getString("created_at"));
+		reply.setContent(rs.getString("content"));
+		reply.setCommentId(rs.getInt("comment_id"));
+		reply.setReplyId(rs.getInt("reply_id"));
+		
+		rlist.add(reply);
+	}
+	
+	
 } catch (Exception e) {
 	e.printStackTrace();
 } finally {
@@ -129,6 +261,138 @@ try {
 <!-- responsive style -->
 <link href="<%=request.getContextPath()%>/css/responsive.css"
 	rel="stylesheet" />
+
+<script>
+	//-------------------------------- 댓글 작성 함수 -------------------------------------------------
+		function commentInsertFn(){
+		let loginMember = '<%=member%>';
+		
+		if(loginMember != 'null'){
+			let params = $("form[name=replyfrm]").serialize();
+			console.log(params);
+			$.ajax({
+				url : "commentWriteOk.jsp",
+				type:"post",
+				data: params,
+				success:function(data){
+				
+					if(data.trim() != "FAIL"){
+						$(".commentArea").prepend(data.trim());
+					}
+				},error:function(){
+					console.log("error");
+				}
+			});
+		}else{
+			alert("로그인후에 처리하세요");
+		}
+		
+		$("input[name=content]").val("");
+	}
+	
+	//-------------------------------- 댓글 삭제 함수 -------------------------------------------------
+	function replyDelFn(commentid,obj){
+		$.ajax({
+			url : "deleteCommentOk.jsp",
+			type : "post",
+			data : "commentid="+commentid,
+			success:function(data){
+				console.log(data);
+				if(data.trim() == 'SUCCESS'){
+					alert("댓글이 삭제되었습니다.");
+					
+					let target = $(obj).parent().parent();
+					target.remove();
+					
+				}else{
+					alert("댓글이 삭제되지 못했습니다.");
+				}
+			},error:function(){
+				console.log("error");
+			}
+		});
+		
+	}
+	
+	//-------------------------------- 댓글 수정 함수 -------------------------------------------------
+	let isModify = false;
+	function modifyFn(obj, rno){
+		
+		if(!isModify){
+			//입력양식 초기값 얻어오기
+			let value = $(obj).parent().prev("span").text().trim();
+			console.log(value);
+			
+			let html = "<input type='text' name='rcontent' value='"+value+"'>";
+			html += "<input type='hidden' name='rno' value='"+rno+"'>";
+			html += "<input type='hidden' name='oldRcontent' value='"+value+"'>";
+			
+			$(obj).parent().prev("span").html(html);
+			
+			html = "<button onclick='saveFn(this)'>저장</button>"
+				 +"<button onclick='cancleFn(this)'>취소</button>";
+			
+			$(obj).parent().html(html);
+			
+			isModify = true;
+		}else{
+			alert("수정중인 댓글을 저장하세요.");
+		}
+	}
+	//-------------------------------- 댓글 수정 저장 함수 -------------------------------------------------
+	function saveFn(obj){
+		
+		isModify = false;
+		
+		let value = $(obj).parent().prev("span")
+						.find("input[name=rcontent]").val();
+		let rno = $(obj).parent().prev("span")
+						.find("input[name=rno]").val();
+		let originalValue = $(obj).parent().prev("span")
+								.find("input[name=oldRcontent]").val();
+		
+		$.ajax({
+			url : "commentModifyOk.jsp",
+			tyep : "post",
+			data : {rcontent : value, rno : rno},
+			success : function(data){
+				if(data.trim() == 'SUCCESS'){
+					$(obj).parent().prev("span").text(value);
+					let html = '<button onclick="modifyFn(this,'+rno+')">수정</button>'
+							+  '<button onclick="replyDelFn('+rno+',this)">삭제</button>';
+					$(obj).parent().html(html);							
+				}else{
+					$(obj).parent().prev("span").text(originalValue);
+					let html = '<button onclick="modifyFn(this,'+rno+')">수정</button>'
+							+  '<button onclick="replyDelFn('+rno+',this)">삭제</button>';
+					$(obj).parent().html(html);		
+				}
+			},error:function(){
+				console.log("error");
+			}
+		});
+		
+	}
+	//-------------------------------- 댓글 수정 취소 함수 -------------------------------------------------
+		function cancleFn(obj){
+		let originalValue = $(obj).parent().prev("span").find("input[name=oldRcontent]").val();
+		console.log(originalValue);
+
+		let rno = $(obj).parent().prev("span").find("input[name=rno]").val();
+		
+		$(obj).parent().prev("span").text(originalValue);
+		
+		
+		let html = "<button onclick='modifyFn(this, "+rno+")'>수정</button>";
+		html += "<button onclick='replyDelFn("+rno+",this)'>삭제</button>";
+		
+		$(obj).parent().html(html);
+		
+		isModify = false;
+		
+	}
+	
+</script>
 </head>
 
 <body class="sub_page">
@@ -151,8 +415,34 @@ try {
 					<div class="text-right">
 						<button onclick="location.href='list.jsp'" type="button"
 							class="btn btn-secondary">목록</button>
-					</div>
 
+						<!-------------------------------------------------- 이전글, 다음글, 목록 버튼 위치 -------------------------------------------------->
+
+						<!-- 이전 글 -->
+						<%
+						if (before != 0) { // before의 값이 0이 아닌 경우 아래 버튼이 보여짐!
+							// before의 값이 0인 경우 아래 버튼이 숨겨짐!
+						%>
+						<button onclick="location.href='view.jsp?board_id=<%=before%>'"
+							class="btn btn-primary me-md-3" type="button">이전글</button>
+						<%
+						}
+						%>
+
+						<!-- 다음 글 -->
+						<%
+						if (after != 0) { // after 값이 0이 아닌 경우 아래 버튼이 보여짐!
+							// after 값이 0인 경우 아래 버튼이 숨겨짐!
+						%>
+
+						<button onclick="location.href='view.jsp?board_id=<%=after%>'"
+							class="btn btn-primary me-md-3" type="button">다음글</button>
+						<%
+						}
+						%>
+					</div>
+					<br>
+					<!---------------------------------------------- 이전글, 다음글, 목록 버튼 위치 -------------------------------------------------------->
 
 					<h3 class="mb-3">
 						제 목 :
@@ -207,9 +497,144 @@ try {
 							value="<%=board.getBoardId()%>">
 					</form>
 
+	<!---------------------------------------------------- 댓글 영역 ------------------------------------------------------->
+					<form name="replyfrm">
+						<input type="hidden" name="board_id"
+							value="<%=board.getBoardId()%>"> 댓글 : <input type="text"
+							name="content">
+						<button type="button" onclick="commentInsertFn()">저장</button>
+					</form>
+
+					<div class="commentArea">
+						<%
+						for (Comment comment : clist) {
+						%>
+						<div>
+							<%=comment.getNicknm()%>
+							: <span>
+							<%=comment.getContent()%>
+						
+							</span> 
+							<span>
+								<button onclick="modifyFn(this,<%=comment.getCommentId()%>)">수정</button>
+								<button onclick="replyDelFn(<%=comment.getCommentId()%>,this)">삭제</button>
+							</span>
+								<button onclick="replyFn(<%=comment.getCommentId()%>)">답글</button>
+								
+						</div>
+
+						<!-- 각 댓글에 대한 답글 폼 추가 -->
+						<form name="replyfrm_<%=comment.getCommentId()%>"
+							style="display: none;">
+							<input type="hidden" name="board_id"
+								value="<%=board.getBoardId()%>"> 답글 : <input type="text"
+								name="content">
+							<button type="button"
+								onclick="replyInsertFn(<%=comment.getCommentId()%>)">저장</button>
+						</form>
+
+				<div class="replyArea">
+				<%
+				for (Reply reply : rlist) {
+					if(comment.getCommentId() == reply.getCommentId()){
+				%>
+				<div>
+					<%= reply.getContent() %>
+				
+					<span>
+						<button onclick="deleteReplyFn(<%=reply.getReplyId()%>,this)">삭제</button>
+					</span>
+				
+				</div>
+				
+				<%
+					}
+				}
+				%>
+				
+				</div>
+						<%
+							}
+						
+						%>
+					</div>
+					
+	<!---------------------------------------------------- 댓글 영역 ------------------------------------------------------->
+		
+
+<script>
+function replyFn(commentId) {
+    // 해당 댓글에 대한 답글 폼의 표시 여부를 전환합니다.
+    var replyForm = document.forms["replyfrm_" + commentId];
+    replyForm.style.display = (replyForm.style.display === 'none' || replyForm.style.display === '') ? 'block' : 'none';
+}
+
+//---------------------------------------------- 답글 저장 -------------------------------------------------------------------
+function replyInsertFn(parentCommentId) {
+    // 답글 추가를 처리하는 함수를 수정합니다.
+    var replyForm = document.forms["replyfrm_" + parentCommentId];
+    var content = replyForm.elements["content"].value;
+    var boardId = replyForm.elements["board_id"].value;
+    // AJAX를 사용하여 서버에 데이터를 전송합니다.
+    $.ajax({
+        type: "POST",
+        url: "replyWriteOk.jsp", // 서버의 처리 페이지 URL
+        data: {
+            parentCommentId: parentCommentId,
+            content: content,
+            board_id: boardId 
+        },
+        success: function(data) {
+            // 성공 시 서버의 응답에 대한 처리를 수행합니다.
+            // response 변수에 서버에서 전송한 내용이 들어있습니다.
+         	location.reload(); 
+            
+            if(data.trim() != "FAIL"){
+				$(".replyArea").prepend(data.trim());
+			}
+        },
+        error: function(error) {
+            // 오류 발생 시 처리를 수행합니다.
+            alert("답글 등록에 실패했습니다. 오류: " + error);
+        }
+    });
+
+    // 제출 후 답글 폼을 숨깁니다.
+    replyForm.elements["content"].value = '';
+    replyForm.style.display = 'none';
+}
+
+//-------------------------------------- 답글 삭제 ------------------------------------------------------
+function deleteReplyFn(replyId, obj) {
+    $.ajax({
+        url: "deleteReplyOk.jsp",
+        type: "post",
+        data: "replyId=" + replyId,
+        success: function (data) {
+            if (data.trim() === 'SUCCESS') {
+            	
+                alert("답글이 삭제되었습니다.");
+                
+            	let target = $(obj).parent().parent();
+				target.remove();
+                
+            } else {
+                alert("답글이 삭제되지 못했습니다.");
+            }
+        },
+        error: function () {
+            console.log("error");
+        }
+    });
+}
+
+
+</script>
+
 				</div>
 			</div>
 		</div>
+
 	</section>
 
 
