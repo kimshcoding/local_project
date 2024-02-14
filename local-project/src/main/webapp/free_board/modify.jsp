@@ -50,12 +50,12 @@ session.setAttribute("login",mlogin);
 		if(rs.next()){
 			board.setCreatedBy(rs.getInt("created_by"));
 			board.setTitle(rs.getString("title"));
-			board.setMemberId(rs.getInt("member_id"));
 			board.setNicknm(rs.getString("nicknm"));
 			board.setCreatedAt(rs.getString("created_at"));
 			board.setContent(rs.getString("content"));
 			board.setHit(rs.getInt("hit"));
 			board.setBoardId(rs.getInt("board_id"));
+			/* board.setMemberId(rs.getInt("member_id")); */
 			
 		}
 		

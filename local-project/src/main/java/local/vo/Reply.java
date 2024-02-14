@@ -1,6 +1,6 @@
 package local.vo;
 
-public class Reply {
+public class Reply  {
 	private int replyId;		// 답글 ID
 	private int commentId;  	// 댓글 ID
 	private int boardId;		// 게시글 ID

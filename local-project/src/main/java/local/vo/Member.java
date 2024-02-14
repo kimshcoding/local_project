@@ -1,6 +1,6 @@
 package local.vo;
 
-public class Member {
+public class Member extends Reply {
 	private int memberId;			// 회원 ID (기본키)
 	private String localId;			// 지역 ID
 	private char codeId;  			// 권한코드 ID
@@ -23,7 +23,6 @@ public class Member {
 	private String postCode;     	// 우편주소
 	private String addr;     		// 기본주소
 	private String addrDetail;      // 상세주소
-	
 	
 	
 

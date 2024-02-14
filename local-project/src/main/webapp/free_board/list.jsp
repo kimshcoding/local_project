@@ -3,6 +3,15 @@
 <%@ page import="local.vo.*"%>
 <%@ page import="java.sql.*"%>
 <%
+
+//--------- 임시 로그인 -----------------------------------------
+Member mlogin = new Member();
+mlogin.setEmail("good@good.com");
+mlogin.setMemberId(1);
+session.setAttribute("login", mlogin);
+//--------- 임시 로그인 -----------------------------------------
+
+
 Member member = (Member) session.getAttribute("login");
 
 request.setCharacterEncoding("UTF-8");
@@ -63,7 +72,7 @@ try {
 	pagingVO = new PagingVO(nowPage, totalCnt, 2);
 
 	rs = null;
-	String sql = "SELECT board_id, title, b.local_id, m.nicknm, b.created_at, b.hit " + "  FROM board b      "
+	String sql = "SELECT board_id, title, b.local_id, m.nicknm, b.created_at, b.hit, m.local_extra " + "  FROM board b      "
 	+ " INNER JOIN member m" + " ON b.created_by = m.member_id   " + " WHERE b.delyn = 'N'";
 
 	if (searchType != null) {
@@ -185,10 +194,11 @@ try {
                             String createdAt = rs.getString("created_at");
                             String nicknm = rs.getString("nicknm");
                             int hit = rs.getInt("hit");
+                            String localExtra= rs.getString("local_extra");
                         %>
                             <tr>
                                 <th scope="row"><%=boardId%></th>
-                                <td><%=localId%></td>
+                                <td><%=localExtra%></td>
                                 <td>
                                     <div class="row">
                                         <div class="col-8 text-truncate">
@@ -199,7 +209,7 @@ try {
                                 <td><%=createdAt%></td>
                                 <td><%=nicknm%></td>
                                 <td>
-                                    <div class="badge bg-success"><%=hit%></div>
+                                    <div class="badge bg-warning"><%=hit%></div>
                                 </td>
                             </tr>
                         <% } %>
