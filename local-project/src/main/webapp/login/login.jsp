@@ -44,8 +44,6 @@
 		<!-- end header section -->
 	</div>
 
-
-
 	<!-- login section -->
 	<section class="about_section layout_padding">
 		<div class="container">
@@ -57,17 +55,21 @@
 							<h2>로그인</h2>
 						</div>
 						<p>정확한 입력을 해주세요!</p>
-						<div class="input-group flex-nowrap">
-							<span class="input-group-text" id="addon-wrapping">로그인</span> <input
-								type="text" class="form-control" placeholder="카카오톡으로 로그인하기"
-								aria-label="Username" aria-describedby="addon-wrapping">
-						</div>
-						<br>
-						<div class="input-group flex-nowrap">
-							<span class="input-group-text" id="addon-wrapping">로그인</span> <input
-								type="text" class="form-control" placeholder="이메일로 로그인하기"
-								aria-label="Username" aria-describedby="addon-wrapping">
-						</div>
+						<form action="loginOk.jsp" method="post">
+							<div class="input-group flex-nowrap">
+								<span class="input-group-text" id="addon-wrapping">Email</span> <input
+									type="email" id="email" name="email" class="form-control" placeholder="email"
+									aria-label="Username" aria-describedby="addon-wrapping">
+							</div>
+							<br>
+							<div class="input-group flex-nowrap">
+								<span class="input-group-text" id="addon-wrapping">비밀번호</span> <input
+									type="password" id="password" name="password" class="form-control" placeholder="password"
+									aria-label="Username" aria-describedby="addon-wrapping">
+							</div>
+							<br>
+							<button type="submit" class="btn btn-primary">로그인</button>
+						</form>
 					</div>
 				</div>
 			</div>
@@ -86,8 +88,8 @@
 	<!-- footer section -->
 
 
-	<script src="<%=request.getContextPath()%>/js/jquery-3.4.1.min.js"></script>
-	<script src="<%=request.getContextPath()%>/js/bootstrap.js"></script>
+	<script src="/js/jquery-3.4.1.min.js"></script>
+	<script src="/js/bootstrap.js"></script>
 
 </body>
 </html>

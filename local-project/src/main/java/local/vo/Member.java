@@ -3,7 +3,7 @@ package local.vo;
 public class Member extends Reply {
 	private int memberId;			// 회원 ID (기본키)
 	private String localId;			// 지역 ID
-	private char codeId;  			// 권한코드 ID
+	private char codeId;  	    // 권한코드 ID
 	private String email;			// 이메일
 	private String password;        // 비밀번호
 	private String nicknm;			// 닉네임

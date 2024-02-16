@@ -3,15 +3,6 @@
 <%@ page import="local.vo.*"%>
 <%@ page import="java.sql.*"%>
 <%
-
-//--------- 임시 로그인 -----------------------------------------
-Member mlogin = new Member();
-mlogin.setEmail("good@good.com");
-mlogin.setMemberId(1);
-session.setAttribute("login", mlogin);
-//--------- 임시 로그인 -----------------------------------------
-
-
 Member member = (Member) session.getAttribute("login");
 
 request.setCharacterEncoding("UTF-8");
@@ -69,10 +60,10 @@ try {
 		psmt.close();
 
 	//paging 객체 생성
-	pagingVO = new PagingVO(nowPage, totalCnt, 2);
+	pagingVO = new PagingVO(nowPage, totalCnt, 10);
 
 	rs = null;
-	String sql = "SELECT board_id, title, b.local_id, m.nicknm, b.created_at, b.hit, m.local_extra " + "  FROM board b      "
+	String sql = "SELECT board_id, title, m.nicknm, b.created_at, b.hit, m.addr_extra " + "  FROM board b      "
 	+ " INNER JOIN member m" + " ON b.created_by = m.member_id   " + " WHERE b.delyn = 'N'";
 
 	if (searchType != null) {
@@ -170,8 +161,25 @@ try {
 
 
             <div class="text-right">
-                <button onclick="location.href='write.jsp'" type="button" class="btn btn-info">글쓰기</button>
+                <button onclick="goToPage()" type="button" class="btn btn-info">글쓰기</button>
             </div><br>
+
+            <!-- 로그인한 사용자에게만 글쓰기 가능 -->
+            <script>
+            function goToPage(){
+            	let loginMember = '<%=member%>'; 
+            	if(loginMember != 'null'){
+            		location.href='write.jsp';
+            }else{
+            	alert("로그인후에 처리하세요");
+            	location.href='<%=request.getContextPath()%>/login/login.jsp';
+            	}
+            }
+            </script>        
+
+
+
+
 
             <!-- Table Section -->
             <div>
@@ -189,16 +197,15 @@ try {
                     <tbody>
                         <% while (rs.next()) { 
                             int boardId = rs.getInt("board_id");
-                            String localId = rs.getString("local_id");
                             String title = rs.getString("title");
                             String createdAt = rs.getString("created_at");
                             String nicknm = rs.getString("nicknm");
                             int hit = rs.getInt("hit");
-                            String localExtra= rs.getString("local_extra");
+                            String addrExtra= rs.getString("addr_extra");
                         %>
                             <tr>
                                 <th scope="row"><%=boardId%></th>
-                                <td><%=localExtra%></td>
+                                <td><%=addrExtra%></td>
                                 <td>
                                     <div class="row">
                                         <div class="col-8 text-truncate">

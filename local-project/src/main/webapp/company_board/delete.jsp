@@ -23,7 +23,8 @@
 	
 	Connection conn = null;
 	PreparedStatement psmt= null;
-	 String url = "jdbc:mysql://localhost:3306/localboard";
+	String url = "jdbc:mysql://localhost:3306/localboard"; 
+/* 	String url = "jdbc:mysql://192.168.0.88:3306/localboard";  */
 	String user = "cteam";
 	String pass = "1234";
 	
@@ -32,9 +33,9 @@
 		Class.forName("com.mysql.cj.jdbc.Driver");
 		conn = DriverManager.getConnection(url,user,pass);
 		
-		String sql = "UPDATE board      "
+		String sql = "UPDATE local_board      "
 				   + "   SET delyn = 'Y'"
-				   + " WHERE board_id = ?  AND type = 'F'";  // F 게시글만 삭제
+				   + " WHERE lb_id = ? ";  
 		
 		psmt = conn.prepareStatement(sql);
 		psmt.setInt(1, boardId);

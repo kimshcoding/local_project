@@ -1,20 +1,97 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8"
 	pageEncoding="UTF-8"%>
-<%@ page import="local.vo.Member"%>
+<%@ page import="java.sql.*"%>
+<%@ page import="local.vo.*"%>
+<%@ page import="java.util.*"%>	
 
 <%
+
 Member member = (Member) session.getAttribute("login");
 
-if (member == null) {
-%>
-<script>
-   alert("잘못된 접근입니다.");
-   location.href = 'list.jsp';
-</script>
-<%
+String lbIdParam = request.getParameter("board_id");
+
+int lbId = 0;
+if (lbIdParam != null && !lbIdParam.equals("")) {
+	lbId = Integer.parseInt(lbIdParam);
+}
+
+Connection conn = null;
+PreparedStatement psmt = null;
+ResultSet rs = null;
+/* String url = "jdbc:mysql://192.168.0.88:3306/localboard"; */
+String url = "jdbc:mysql://localhost:3306/localboard"; 
+String user = "cteam";
+String pass = "1234";
+
+LocalBoard board = new LocalBoard(); // 동네업체 게시판 결과를 담을 객체
+List<BoardFileDetail> bflist = new ArrayList<BoardFileDetail>(); // 게시글 첨부파일 목록 변수
+
+try {
+   Class.forName("com.mysql.cj.jdbc.Driver");
+   conn = DriverManager.getConnection(url, user, pass);
+
+   //---------------------- 동네업체 게시판 목록 데이터 가져오기 ---------------------------------------------
+   String sql =  " SELECT lb_id, content, title, created_at, hit , local_extra, post_code, addr, addr_detail " + "  FROM local_board "
+		    + " WHERE lb_id = ? "; 
+   
+	
+   psmt = conn.prepareStatement(sql);
+   psmt.setInt(1, lbId);
+   rs = psmt.executeQuery();
+
+   if (rs.next()) {
+      board.setLbId(rs.getInt("lb_id"));
+      board.setContent(rs.getString("content"));
+      board.setTitle(rs.getString("title"));
+      board.setCreatedAt(rs.getString("created_at"));
+      board.setHit(rs.getInt("hit"));
+      board.setLocalExtra(rs.getString("local_extra"));
+      board.setPostCode(rs.getString("post_code"));
+      board.setAddr(rs.getString("addr"));
+      board.setAddrDetail(rs.getString("addr_detail"));
+
+   }
+   //---------------------- 업체 게시판 목록 데이터 가져오기 ---------------------------------------------
+
+   //---------------------- 첨부 파일 데이터 가져오기 ---------------------------------------------
+
+   if (psmt != null)
+      psmt.close();
+   if (rs != null)
+      rs.close();
+
+   sql = "select * from board_file_detail bfd inner join local_board lb on bfd.file_id = lb.file_id where lb_id = ?";
+
+   psmt = conn.prepareStatement(sql);
+   psmt.setInt(1, lbId);
+
+   rs = psmt.executeQuery();
+
+   while (rs.next()) {
+      // 각 행의 데이터를 담을 BoardFile 객체를 생성합니다.
+      BoardFileDetail bfd = new BoardFileDetail();
+
+      bfd.setFileOrd(rs.getInt("file_ord")); // bfno 열의 값을 읽어와서 BoardFile 객체에 설정합니다.
+      bfd.setFileId(rs.getInt("file_id"));
+      bfd.setFileRealNm(rs.getString("file_real_nm"));
+      bfd.setFileOriginNm(rs.getString("file_origin_nm"));
+      bfd.setCreatedAt(rs.getString("created_at"));
+      bfd.setFileThumbnailNm(rs.getString("file_thumbnail_nm"));
+      bflist.add(bfd);
+   }
+
+} catch (Exception e) {
+   e.printStackTrace();
+} finally {
+   if (conn != null)
+      conn.close();
+   if (psmt != null)
+      psmt.close();
+   if (rs != null)
+      rs.close();
 }
 %>
-
+	
 <!DOCTYPE html>
 <html>
 <head>
@@ -87,10 +164,12 @@ if (member == null) {
 							<button onclick="location.href='list.jsp'" class="btn btn-secondary">목록</button>          
                 		</div><br>
 
-						<form action="writeOk.jsp?member_id=<%=member.getMemberId()%>" method="post" name="frm" enctype="multipart/form-data" id="frm">
+                <form name="frm" action="modifyOk.jsp" method="post" enctype="multipart/form-data">
+					<input type="hidden" name="lb_id" value="<%=board.getLbId()%>">
+							
 							<div class="input-group flex-nowrap">
-								<span class="input-group-text" id="addon-wrapping">제목</span> <input
-									type="text" class="form-control" placeholder="제목을 입력하세요."
+								<span class="input-group-text" id="addon-wrapping">제목</span> 
+								<input type="text" class="form-control" value="<%=board.getTitle()%>"
 									aria-label="Username" aria-describedby="addon-wrapping"
 									name="title">
 							</div>
@@ -100,7 +179,7 @@ if (member == null) {
 								<span class="input-group-text justify-content-center">내용</span>
 								<textarea id="summernote" class="form-control"
 									aria-label="With textarea" placeholder="내용을 입력하세요." rows="10"
-									name="content"></textarea>
+									name="content"><%=board.getContent()%></textarea>
 
 								<script>
                                 $('#summernote').summernote({
@@ -123,77 +202,94 @@ if (member == null) {
 							<br>
 
 
-							<!-- --------------------------------------첨부파일---------------------------- -->
-							<ul class="uploadUl mb8"
-								style="list-style-type: none; padding-left: 0;">
-
-								<li><input type="file" name="file1" id="file" style="width: 80%; height: 30px;" /> 
-									<img class="btnP" src="<%=request.getContextPath() %>/images/plus.png" style="vertical-align: middle; width: 1em; height: 1em;" /> 
-									<img class="btnM" src="<%=request.getContextPath() %>/images/minus.png" style="vertical-align: middle; width: 1em; height: 1em;" />
+	<!-- --------------------------------------첨부파일---------------------------- -->
+							
+							
+							<ul class="uploadUl mb8" style="list-style-type: none; padding-left: 0;">
+							<%
+								for(int i=0; i<bflist.size(); i++){
+									BoardFileDetail tempbf = (BoardFileDetail) bflist.get(i);
+							%>
+								<li>
+									<input type="text" id="file" name="file<%=i+1%>" value="<%= tempbf.getFileOriginNm()%>" style="width:80%; height:30px;" readonly>
+									
+									<img class="btnP" src="<%=request.getContextPath() %>/images/plus.png" style="vertical-align:middle; width:1em; height:1em;"/>
+									<img class="btnM" src="<%=request.getContextPath() %>/images/minus.png" style="vertical-align:middle; width:1em; height:1em;" data-myparam="<%= tempbf.getFileOrd()%>"/>
 								</li>
-
-								<li><input type="file" name="file2" id="file" style="width: 80%; height: 30px;"> 
-									<img class="btnP" src="<%=request.getContextPath() %>/images/plus.png" style="vertical-align: middle; width: 1em; height: 1em;" /> 
-									<img class="btnM" src="<%=request.getContextPath() %>/images/minus.png" style="vertical-align: middle; width: 1em; height: 1em;" />
-								</li>
-
-								<li><input type="file" name="file3" id="file" style="width: 80%; height: 30px;" /> 
-									<img class="btnP" src="<%=request.getContextPath() %>/images/plus.png" style="vertical-align: middle; width: 1em; height: 1em;" /> 
-									<img class="btnM" src="<%=request.getContextPath() %>/images/minus.png" style="vertical-align: middle; width: 1em; height: 1em;" />
-								</li>
+								
+							<% 	
+								}
+							
+							%>
 							</ul>
+							
+		<!-- ----------------폼 제출시 첨부파일이 추가가 안 된 입력양식을 삭제함  ----------- -->
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+<script>
+$(document).ready(function() {
+    $('#frm').on('submit', function() {
+        var leLength = $(".uploadUl li").length;
+        for(var i = 0; i < leLength; i++) {
+            if ($("input[name='file" + (i + 1) + "']").val() == "") {
+                $("input[name='file" + (i + 1) + "']").parent("li").remove();
+            }
+        }
+    });
+});
 
-							<!-- ---------- 첨부파일 추가 및 삭제---------------------- -->
-	
-		 
-		 
-		 
-<!-- 	폼 제출시 첨부파일이 추가가 안 된 입력양식을 삭제하는 자바스크립트 (시작) -->
-		 <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
-		 <script>
-		 $(document).ready(function() {
-		     $('#frm').on('submit', function() {
-		         var leLength = $(".uploadUl li").length;
-		         for(var i = 0; i < leLength; i++) {
-		             if ($("input[name='file" + (i + 1) + "']").val() == "") {
-		                 $("input[name='file" + (i + 1) + "']").parent("li").remove();
-		             }
-		         }
-		     });
-		 });
-		
-		/* 플러스 버튼을 눌렀을때  */
-		
-		$(document).on("click", ".btnP", function(){
-			var target = $(this);
-			var fileNum = Number(target.parent().parent("ul").find("li:last-child").find("input").attr("name").substring(4))+1;
-			$('<li><input type="file" name="file'+fileNum+'" id="file" style="width:80%; height:30px;"><img class="btnP" src="<%=request.getContextPath() %>/images/plus.png" style="vertical-align:middle; width:1em; height:1em;"/><img class="btnM" src="<%=request.getContextPath() %>/images/minus.png" style="vertical-align:middle; width:1em; height:1em;"/></li>').insertAfter(target.parent().parent("ul").find("li:last-child")); 
-		});
-		
-		/* 마이너스 버튼을 눌렀을때*/
-		$(document).on("click", ".btnM", function(){
+
+//---------------------마이너스 버튼을 눌렀을때 첨부파일을 삭제하는 함수(ajax통신 이용)-------------------
+	$(document).on("click", ".btnM", function(){
 			var target = $(this);
 			var liLen = $(this).parent().parent("ul").find("li").length;
 			if(liLen!=1) target.parent().remove();
 			else  alert("모두 지울 수 없습니다.");
 			
+			if(liLen!=1 && $(this).data('myparam')!=null){
+				var myParam = $(this).data('myparam'); //삭제할 파일번호
+			    console.log("매개변수 값:"+ myParam);
+				
+			$.ajax({
+				url : "fileDeleteOk.jsp",
+				type : "post",
+				data : "fileOrd="+myParam,
+				success:function(data){
+					if(data.trim() == 'SUCCESS'){
+						alert("파일이 삭제되었습니다.");
+						
+					}else{
+						alert("파일이 삭제되지 못했습니다.");
+					}
+				},error:function(){
+					console.log("error");
+				}
+			});
+			
+			}
 		});
-	
-	</script>
-							<!-- --------------------------------------첨부파일----------------------------------------->
-							<hr>
-							<!---------------------------------------- 업체주소 등록하기-------------------------------- -->
+
+	/* 플러스 버튼을 눌렀을때  */
+		$(document).on("click", ".btnP", function(){
+			var target = $(this);
+			console.log("target:"+target);
+			var fileNum = Number(target.parent().parent("ul").find("li:last-child").find("input").attr("name").substring(4))+1;
+			$('<li><input type="file" name="file'+fileNum+'" id="file" style="width:80%; height:30px;"><img class="btnP" src="<%=request.getContextPath() %>/images/plus.png" style="vertical-align:middle; width:1em; height:1em;"/><img class="btnM" src="<%=request.getContextPath() %>/images/minus.png" style="vertical-align:middle; width:1em; height:1em;"/></li>').insertAfter(target.parent().parent("ul").find("li:last-child")); 
+		});
+		
+	</script> 
+
+<!---------------------------------------- 업체주소 등록하기-------------------------------- -->
 	
 	<div class="text-left">
 		<h4> 가게를 방문할 수 있도록 위치를 등록하세요</h4>
-		<input type="text" id="sample3_postcode" placeholder="우편번호" name="post_code">
+		<input type="text" id="sample3_postcode" placeholder="우편번호" name="postCode" value="<%=board.getPostCode()%>" >
 		<input type="button" onclick="sample3_execDaumPostcode()"
 			value="우편번호 찾기">
 		<br>
-		<input type="text" id="sample3_address" placeholder="주소" name="addr">
+		<input type="text" id="sample3_address" placeholder="주소" name="addr" value="<%=board.getAddr()%>">
 		<br>
-		<input type="text" id="sample3_detailAddress" placeholder="상세주소" name="addr_detail">
-		<input type="text" id="sample3_extraAddress" placeholder="참고항목" name="local_extra">
+		<input type="text" id="sample3_detailAddress" placeholder="상세주소" name="addrDetail" value="<%=board.getAddrDetail()%>">
+		<input type="text" id="sample3_extraAddress" placeholder="참고항목" name="localExtra" value="<%=board.getLocalExtra()%>">
 		<!-- 	<button onclick="saveAddressToServer()">저장</button> -->
 	
 		<div id="wrap"
@@ -330,7 +426,10 @@ if (member == null) {
 		}
 	</script>						
 <!---------------------------------------- 업체주소 등록하기-------------------------------- -->
-							<hr>
+
+
+						
+							
 							<button type="submit" class="btn btn-info">저장</button>
 						</form>
 					</div>
@@ -357,4 +456,6 @@ if (member == null) {
 	<script src="<%=request.getContextPath()%>/js/bootstrap.js"></script>
 
 </body>
-</html>
+</html>	
+	
+	

@@ -4,13 +4,6 @@
 <%@ page import="local.vo.*" %>    
 
 <%
-//---------------------- 임시 로그인 ----------------------
-Member mlogin = new Member();
-mlogin.setEmail("good@good.com");
-mlogin.setMemberId(1);
-session.setAttribute("login",mlogin);
-//---------------------- 임시 로그인 ------------------------
-
 
 	Member member = (Member)session.getAttribute("login");
 
@@ -25,7 +18,7 @@ session.setAttribute("login",mlogin);
 	Connection conn = null;
 	PreparedStatement psmt= null;
 	ResultSet rs = null;
-	String url = "jdbc:mysql://localhost:3306/localboard";
+	 String url = "jdbc:mysql://localhost:3306/localboard";
 	String user = "cteam";
 	String pass = "1234";
 	

@@ -7,7 +7,7 @@
 	String realNM = request.getParameter("realNM");
 	String originNM = request.getParameter("originNM");
 	
-	String root = "C:\\Users\\migue\\eclipse-workspace\\local-project\\src\\main\\webapp\\upload";
+	String root = "C:\\Users\\migue\\git\\local_project\\local-project\\src\\main\\webapp\\upload";
 	
 	InputStream in = null;
 	OutputStream os = null;

@@ -4,12 +4,6 @@
 
 
 <%
-//--------- 임시 로그인 -----------------------------------------
-Member mlogin = new Member();
-mlogin.setEmail("good@good.com");
-mlogin.setMemberId(1);
-session.setAttribute("login",mlogin);
-//--------- 임시 로그인 -----------------------------------------
 
 Member member = (Member) session.getAttribute("login");
 
@@ -22,6 +16,7 @@ if (member == null) {
 <%
 }
 %>	
+
 <!DOCTYPE html>
 <html>
 <head>

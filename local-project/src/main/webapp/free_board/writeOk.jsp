@@ -38,7 +38,7 @@
 
     Connection conn = null;
     PreparedStatement psmt = null;
-    String url = "jdbc:mysql://localhost/localboard";
+    String url = "jdbc:mysql://localhost:3306/localboard";
     String user = "cteam";
     String pass = "1234";
 
@@ -95,7 +95,7 @@
         
   
        
-        sql = "INSERT INTO board(title, content, type, local_id, file_id, created_ip, created_by, created_at, modified_by, modified_ip, modified_at) VALUES(?, ?, 'F', 'JJ', ?, ?, ?, now(), ?, 'TEST', now())";
+        sql = "INSERT INTO board(title, content, type, file_id, created_ip, created_by, created_at, modified_by, modified_ip, modified_at) VALUES(?, ?, 'F', ?, ?, ?, now(), ?, 'TEST', now())";
         psmt = conn.prepareStatement(sql);
 
         psmt.setString(1, board.getTitle());

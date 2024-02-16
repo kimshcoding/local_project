@@ -19,18 +19,19 @@
 		conn = DriverManager.getConnection(url,user,pass);
 		System.out.println("연결성공!");
 		
-		String sql = "INSERT INTO member(code_id, local_id, email, password, nicknm, phone, local_extra, post_code, addr, addr_detail)"
-				   + "VALUES ('A','JJ', 'test3', 1, 'code', '010-1111-1111', ?, ?, ?, ?)";
+		String sql = "INSERT INTO member(email, password, nicknm, phone, addr_extra, addr_post_code, addr_basic, addr_detail, code_id)"
+				   + "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
 		
 		psmt = conn.prepareStatement(sql);
-	/* 	psmt.setString(1, member.getEmail());
+	    psmt.setString(1, member.getEmail());
 		psmt.setString(2, member.getPassword());
 		psmt.setString(3, member.getNicknm());
-		psmt.setString(4, member.getPhone()); */
-		psmt.setString(1, request.getParameter("extraAddress"));
-		psmt.setString(2, request.getParameter("postcode"));
-		psmt.setString(3, request.getParameter("address"));
-		psmt.setString(4, request.getParameter("detailAddress"));
+		psmt.setString(4, member.getPhone());
+		psmt.setString(5, request.getParameter("extraAddress"));  // addr_extra
+		psmt.setString(6, request.getParameter("postcode"));	  // addr_post_code
+		psmt.setString(7, request.getParameter("address"));		  // addr_basic
+		psmt.setString(8, request.getParameter("detailAddress")); //addr_detail
+		psmt.setString(9, member.getCodeId()); 
 		
 		insertRow = psmt.executeUpdate();
 		

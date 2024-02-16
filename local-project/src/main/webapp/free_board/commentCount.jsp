@@ -23,10 +23,11 @@
         Class.forName("com.mysql.cj.jdbc.Driver");
         conn = DriverManager.getConnection(url, user, pass);
 
-        String sql = "UPDATE board b SET b.comment_count = (SELECT COUNT(comment_id) FROM comment WHERE board_id = b.board_id AND delyn = 'N') WHERE b.board_id = ?;";
+        String sql = "UPDATE board b SET b.comment_count = (SELECT COUNT(comment_id) FROM comment WHERE board_id = ? AND delyn = 'N') WHERE b.board_id = ?;";
         psmt = conn.prepareStatement(sql);
         psmt.setInt(1, boardId);
-        
+        psmt.setInt(2, boardId);
+
         int result = psmt.executeUpdate();
 
         if (result > 0) {

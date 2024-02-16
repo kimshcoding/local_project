@@ -1,5 +1,5 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8"
-	pageEncoding="UTF-8"%>
+    pageEncoding="UTF-8"%>
 <!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -11,22 +11,15 @@
 <script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
 </head>
 <body>
-
-
-
-
-
-
-	<input type="text" id="sample3_postcode" placeholder="우편번호">
+	<input type="text" id="sample3_postcode" placeholder="우편번호" name="post_code">
 	<input type="button" onclick="sample3_execDaumPostcode()"
 		value="우편번호 찾기">
 	<br>
-
-	<input type="text" id="sample3_address" placeholder="주소">
+	<input type="text" id="sample3_address" placeholder="주소" name="addr">
 	<br>
-	<input type="text" id="sample3_detailAddress" placeholder="상세주소">
-	<input type="text" id="sample3_extraAddress" placeholder="참고항목">
-	<button onclick="saveAddressToServer()">저장</button>
+	<input type="text" id="sample3_detailAddress" placeholder="상세주소" name="addr_detail">
+	<input type="text" id="sample3_extraAddress" placeholder="참고항목" name="local_extra">
+<!-- 	<button onclick="saveAddressToServer()">저장</button> -->
 
 	<div id="wrap"
 		style="display: none; border: 1px solid; width: 500px; height: 300px; margin: 5px 0; position: relative">
@@ -137,7 +130,7 @@
 				return; // 처리 중단 역할
 			}
 
-			// 서버에 전송할 데이터를 만듭니다.
+			/* // 서버에 전송할 데이터를 만듭니다.
 			var data = {
 				postcode : postcode, 					 // 우편번호
 				address : address,						 // 기본주소
@@ -145,11 +138,11 @@
 				extraAddress : extraAddressWithoutSpaces // 참고항목(동)
 			// 띄어쓰기가 제거된 값을 전송
 			};
-
-			// jQuery를 사용하여 AJAX 요청을 보냅니다.
+ */
+			/* // jQuery를 사용하여 AJAX 요청을 보냅니다.
 			$.ajax({
 				type : 'POST', // 또는 'GET'
-				url : 'joinOk.jsp', // 실제 서버 엔드포인트로 대체해야 합니다.
+				url : 'findAddressOk.jsp', // 실제 서버 엔드포인트로 대체해야 합니다.
 				data : data,
 				success : function(response) {
 					alert('주소 정보가 성공적으로 저장되었습니다.');
@@ -158,13 +151,9 @@
 					console.error('주소 정보 저장 중 오류 발생:', error);
 					alert('주소 정보 저장 중 오류가 발생했습니다.');
 				}
-			});
+			}); */
 		}
 	</script>
-	
-	
-	
-	
-	
 </body>
 </html>
+    

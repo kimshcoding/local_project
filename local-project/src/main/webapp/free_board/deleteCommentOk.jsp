@@ -1,7 +1,5 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
 <%@ page import="java.sql.*"%>
-<%@ page import="local.vo.*"%>
-
 <%
     String commentIdParam = request.getParameter("commentid");
     int commentId = 0;
@@ -21,13 +19,10 @@
     Connection conn = null;
     PreparedStatement psmt = null;
     ResultSet resultSet = null;
-
     String url = "jdbc:mysql://localhost:3306/localboard";
     String user = "cteam";
     String pass = "1234";
-	
-    Board board = new Board();
-    
+
     try {
         Class.forName("com.mysql.cj.jdbc.Driver");
         conn = DriverManager.getConnection(url, user, pass);
@@ -70,7 +65,6 @@
 
             if (result > 0) {
                 out.print("SUCCESS");
-               
             } else {
                 out.print("댓글 삭제 실패");
             }

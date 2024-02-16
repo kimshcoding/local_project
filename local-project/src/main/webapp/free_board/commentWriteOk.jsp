@@ -60,7 +60,7 @@ if (member != null) {
 	if (rs != null)
 		rs.close();
 %>
-<div class="commentRow">
+<%-- <div class="commentRow">
 	<%=member.getNicknm()%>
 	: <span> <%=comment.getContent()%>
 	</span> <span>
@@ -87,7 +87,7 @@ if (member != null) {
             	   var replyForm = document.forms["replyfrm_" + commentId];
             	   replyForm.style.display = (replyForm.style.display === 'none' || replyForm.style.display === '') ? 'block' : 'none';
            		   }
-</script>
+</script> --%>
 
 <%
 } else {

@@ -5,14 +5,6 @@
 <%@ page import="java.util.*"%>
 
 <%
-//--------- 임시 로그인 -----------------------------------------
-Member mlogin = new Member();
-mlogin.setEmail("TEST4");
-mlogin.setMemberId(8);
-mlogin.setNicknm("good");
-session.setAttribute("login", mlogin);
-//--------- 임시 로그인 -----------------------------------------
-
 Member member = (Member) session.getAttribute("login");
 
 String boardIdParam = request.getParameter("board_id");
@@ -89,8 +81,9 @@ try {
 	//------------------------- 쿠키를 사용하여 조회수 중복 방지 -------------------------------------------------
 
 	//---------------------- 자유 게시판 목록 데이터 가져오기 ---------------------------------------------
-	sql = "SELECT board_Id, content, title, m.nicknm, b.created_at, b.hit, b.comment_count" + "  FROM board b      "
-	+ " INNER JOIN member m" + " ON b.created_by = m.member_id   " + " WHERE b.board_id = ? AND b.type = 'F'"; // 자유게시판 F 데이터만 가져옴!
+	sql = "SELECT board_Id, content, title, m.nicknm, b.created_at, b.hit, b.comment_count, b.created_by"
+	+ "  FROM board b      " + " INNER JOIN member m" + " ON b.created_by = m.member_id   "
+	+ " WHERE b.board_id = ? AND b.type = 'F'"; // 자유게시판 F 데이터만 가져옴!
 
 	psmt = conn.prepareStatement(sql);
 	psmt.setInt(1, boardId);
@@ -104,6 +97,7 @@ try {
 		board.setCreatedAt(rs.getString("created_at"));
 		board.setHit(rs.getInt("hit"));
 		board.setCommentCount(rs.getInt("comment_count")); //댓글수
+		board.setCreatedBy(rs.getInt("created_by")); //댓글수
 
 	}
 	//---------------------- 자유 게시판 목록 데이터 가져오기 ---------------------------------------------
@@ -175,8 +169,8 @@ try {
 		rs.close();
 
 	//------------------------------- 댓글 목록 가져오기 ------------------------------------------------------------
-	sql = " SELECT c.comment_id, m.nicknm, c.content, c.created_at,  ce.modified_at " + "     FROM comment c "
-	+ "     INNER JOIN member m ON c.created_by = m.member_id "
+	sql = " SELECT c.comment_id, m.nicknm, c.content, c.created_at,  ce.modified_at, c.created_by "
+	+ "     FROM comment c " + "     INNER JOIN member m ON c.created_by = m.member_id "
 	+ "     LEFT JOIN comment_edit ce ON c.comment_id = ce.comment_id "
 	+ "     WHERE c.board_id = ? AND c.delyn = 'N' " // 삭제된 댓글은 화면 출력 안됨!
 	+ "     ORDER BY c.comment_id DESC"; // <--- 업데이트를 해도 최신 댓글의 내림차순이 유지됨
@@ -196,12 +190,13 @@ try {
 		comment.setContent(rs.getString("content"));
 		comment.setCreatedAt(rs.getString("created_at"));
 		comment.setModifiedAt(rs.getString("modified_at"));
+		comment.setCreatedBy(rs.getInt("created_by"));
 
 		clist.add(comment);
 	}
 
 	//------------------------------- 답글 목록 가져오기 --------------------------------------------------------------------------------
-	sql = "SELECT created_at, content, comment_id, reply_id from reply WHERE board_id = ? AND delyn = 'N' ORDER BY reply_id DESC";
+	sql = "SELECT created_at, content, comment_id, reply_id, created_by from reply WHERE board_id = ? AND delyn = 'N' ORDER BY reply_id DESC";
 
 	psmt = conn.prepareStatement(sql);
 	psmt.setInt(1, boardId);
@@ -213,6 +208,7 @@ try {
 		reply.setContent(rs.getString("content"));
 		reply.setCommentId(rs.getInt("comment_id"));
 		reply.setReplyId(rs.getInt("reply_id"));
+		reply.setCreatedBy(rs.getInt("created_by"));
 
 		rlist.add(reply);
 	}
@@ -314,34 +310,42 @@ function commentInsertFn() {
             }
         });
     } else {
-        alert("로그인 후에 처리하세요");
+    	alert("로그인을 하신 후 이용해 주시기 바랍니다.");
+        location.href='<%=request.getContextPath()%>/login/login.jsp';
     }
 
     $("input[name=content]").val("");
 }
 //-------------------------------- 댓글 삭제 함수 -------------------------------------------------
 function replyDelFn(commentid, obj) {
-    $.ajax({
-        url: "deleteCommentOk.jsp",
-        type: "post",
-        data: "commentid=" + commentid,
-        success: function (data) {
-            console.log(data);
-            if (data.trim() == 'SUCCESS') {
-                alert("댓글이 삭제되었습니다.");
-                // 댓글 삭제 후 댓글 수 업데이트
-                updateCommentCount();
-                let target = $(obj).parent().parent();
-                target.remove();
-            } else {
-                alert("댓글이 삭제되지 못했습니다. 답글을 먼저 삭제해 주세요!");
+    // 확인 창 띄우기
+    var confirmation = confirm("댓글을 삭제하시겠습니까?");
+    
+    // 사용자가 확인을 눌렀을 경우만 삭제 요청 진행
+    if (confirmation) {
+        $.ajax({
+            url: "deleteCommentOk.jsp",
+            type: "post",
+            data: "commentid=" + commentid,
+            success: function (data) {
+                console.log(data);
+                if (data.trim() == 'SUCCESS') {
+                    alert("댓글이 삭제되었습니다.");
+                    // 댓글 삭제 후 댓글 수 업데이트
+                    updateCommentCount();
+                    let target = $(obj).parent().parent();
+                    target.remove();
+                } else {
+                    alert("댓글이 삭제되지 못했습니다. 답글을 먼저 삭제해 주세요!");
+                }
+            },
+            error: function () {
+                console.log("error");
             }
-        },
-        error: function () {
-            console.log("error");
-        }
-    });
+        });
+    }
 }
+
 
 $(document).ready(function () {
     // 새로고침 버튼 클릭 이벤트
@@ -502,35 +506,46 @@ function cancleFn(obj){
 					<br>
 
 					<!---------------------------------------------- 게시판 목록 데이터 보여주기 -------------------------------------------------------->
+					<div>
+						<h3 class="mb-3">
+							제 목 :
+							<%=board.getTitle()%></h3>
+						<p class="mb-2">
+							작성일 :
+							<%=board.getCreatedAt()%></p>
+						<p class="mb-2">
+							닉네임 :
+							<%=board.getNicknm()%>
+							&nbsp; | &nbsp; 조회수 :
+							<%=board.getHit()%></p>
 
-					<h3 class="mb-3">
-						제 목 :
-						<%=board.getTitle()%></h3>
-					<p class="mb-2">
-						작성일 :
-						<%=board.getCreatedAt()%>
-						| 조회수 :
-						<%=board.getHit()%></p>
-					<p class="mb-2">
-						닉네임 :
-						<%=board.getNicknm()%></p>
-					<hr>
+						<!-------------------------------------------------------------- 좋아요 -------------------------------------------------------------------->
 
-	<!--------------------------------------------- 좋아요 ------------------------------------------------------->
-					
-					
-					<div class="container mt-4">
+
+
 						<button type="button" class="btn btn-light" id="likeButton"
 							onclick="toggleLike(<%=board.getBoardId()%>, this)">
-							<i class="bi bi-heart" id="heartIcon"></i> 좋아요 
-							<span id="likeCount"><%=boardlike.getCount()%></span>
+							<i class="bi bi-heart" id="heartIcon"></i> 좋아요 <span
+								id="likeCount"><%=boardlike.getCount()%></span>
 						</button>
-					</div>
-					
-				
-<script>
+
+						<hr>
+
+
+						<script>
 //좋아요 토글 함수 정의
 function toggleLike(boardId, button) {
+    // 세션에 로그인 정보가 있는지 확인
+    let member = '<%=member%>';
+    if (member == 'null') {
+        // 로그인되어 있지 않은 경우 알림창 띄우기
+       alert("로그인을 하신 후 이용해 주시기 바랍니다.");
+
+        // 로그인 페이지로 이동
+        window.location.href = "<%=request.getContextPath()%>/login/login.jsp";
+        return;
+    }
+
     // 좋아요 개수 업데이트를 표시할 엘리먼트 가져오기
     var likeCountElement = document.getElementById("likeCount");
     
@@ -547,7 +562,7 @@ function toggleLike(boardId, button) {
         
         // 전송할 데이터 설정
         data: { 
-            boardId: <%=board.getBoardId()%>,  // 게시물 ID
+            boardId: boardId,  // 게시물 ID
             action: $("#heartIcon").hasClass("bi-heart") ? "like" : "unlike",  // 좋아요 추가 또는 취소 여부
             likeCount: likeCount  // 현재 좋아요 개수
         },
@@ -574,7 +589,136 @@ function toggleLike(boardId, button) {
         }
     });
 }
+
 </script>
+					</div>
+
+					<!------------------------------------------------------ 게시글 신고 영역 --------------------------------------------->
+					<div class="text-right">
+						<!-- 아이콘 -->
+						<button id="iconButton" class="btn btn-link">
+							<i class="bi bi-three-dots-vertical"></i>
+						</button>
+
+						<!-- 신고 버튼 -->
+						<button id="reportButton" class="btn btn-danger d-none">신고</button>
+
+					</div>
+
+					<!-- 모달 창 -->
+					<div class="modal fade" id="reportModal" tabindex="-1"
+						role="dialog" aria-labelledby="reportModalLabel"
+						aria-hidden="true">
+						<div class="modal-dialog modal-dialog-centered" role="document">
+							<div class="modal-content">
+								<div class="modal-header">
+									<h5 class="modal-title" id="reportModalLabel">게시글 신고</h5>
+									<button type="button" class="close" data-dismiss="modal"
+										aria-label="Close">
+										<span aria-hidden="true">&times;</span>
+									</button>
+								</div>
+								<div class="modal-body">
+									<!-- 여기에 모달 내용을 추가할 수 있습니다 -->
+									<p>게시글을 신고하시겠습니까?</p>
+
+									<!-- 신고 사유 선택 -->
+									<form id="reportForm" method="post">
+
+										<div class="form-group">
+											<label for="reportReason">신고 사유 선택:</label> <select
+												class="form-control" id="reportReason" name="reportReason">
+												<option>스팸홍보/도배글입니다</option>
+												<option>음란물입니다</option>
+												<option>불법정보를 포함하고 있습니다</option>
+												<option>청소년에게 유해한 내용입니다</option>
+												<option>욕설/혐오/차별적 표현입니다</option>
+												<option>개인정보 노출 게시물입니다</option>
+											</select>
+										</div>
+									</form>
+
+									<div class="modal-footer">
+										<button type="button" class="btn btn-secondary"
+											data-dismiss="modal">취소</button>
+										<button onclick="submitReport()" type="button"
+											class="btn btn-danger">신고하기</button>
+									</div>
+								</div>
+							</div>
+						</div>
+					</div>
+<script>
+    // 폼 전송 함수
+    function submitReport() {
+      // reportReason 값을 가져오기
+      var reportReason = $("#reportReason").val();
+
+      // 게시글 정보
+      var boardId = '<%=board.getBoardId()%>';
+      var createdBy = '<%=board.getCreatedBy()%>';
+
+      // AJAX를 사용하여 비동기적으로 서버로 전송
+      $.ajax({
+        type: "POST",
+        url: "boardReport.jsp", // 실제 엔드포인트로 변경
+        data: {
+          'reportReason': reportReason,
+          'boardId': boardId,
+          'createdBy': createdBy
+        },
+        success: function (response) {
+          console.log(response);
+          // 성공적으로 서버에 전송된 후의 처리
+          alert("신고가 접수되었습니다.");
+
+          // 모달을 닫습니다.
+          $("#reportModal").modal("hide");
+
+          // 아이콘으로 돌아갑니다.
+          $("#reportButton").addClass("d-none");
+          $("#iconButton").removeClass("d-none");
+        },
+        error: function (error) {
+          console.error(error);
+          // 전송 중 에러 발생 시의 처리
+          alert("에러");
+        }
+      });
+    }
+    
+    $(document).ready(function () {
+        // 초기에는 신고 버튼을 감춥니다.
+        $("#reportButton").addClass("d-none");
+
+        // 아이콘 버튼 클릭 이벤트
+        $("#iconButton").click(function () {
+          // 아이콘 버튼을 감추고 신고 버튼을 보여줍니다.
+          $("#iconButton").addClass("d-none");
+          $("#reportButton").removeClass("d-none");
+        });
+
+        // 신고 버튼 클릭 이벤트 (모달을 보여주기)
+        $("#reportButton").click(function () {
+          $("#reportModal").modal("show");
+        });
+
+    // 모달 내의 "신고하기" 버튼 클릭 시 모달 닫기
+    $("#submitReportButton").click(function () {
+      // 서버로 데이터를 전송하고, 성공 시 아래의 코드가 실행됩니다.
+      submitReport();
+    });
+
+    // 모달 닫기 이벤트 (아이콘 버튼으로 변경)
+    $("#reportModal").on("hidden.bs.modal", function () {
+      // 아이콘 버튼을 보여줍니다.
+      $("#reportButton").addClass("d-none");
+      $("#iconButton").removeClass("d-none");
+    });
+  });
+</script>
+
+
 
 
 
@@ -598,6 +742,11 @@ function toggleLike(boardId, button) {
 							<p class="card-text"><%=board.getContent()%></p>
 						</div>
 					</div>
+
+
+					<%
+					if (member != null && member.getMemberId() == board.getCreatedBy()) { // 자신의 글만 수정삭제 가능!
+					%>
 					<div class="text-center">
 						<button
 							onclick="location.href='modify.jsp?board_id=<%=board.getBoardId()%>'"
@@ -605,6 +754,10 @@ function toggleLike(boardId, button) {
 
 						<button onclick="delFn()" type="button" class="btn btn-info">삭제</button>
 					</div>
+					<%
+					}
+					%>
+
 					<script>
 						function delFn() {
 							let isDel = confirm("정말 삭제하시겠습니까?");
@@ -614,6 +767,7 @@ function toggleLike(boardId, button) {
 							}
 						}
 					</script>
+
 					<form name="frm" action="delete.jsp" method="post">
 						<input type="hidden" name="board_id"
 							value="<%=board.getBoardId()%>">
@@ -653,6 +807,12 @@ function toggleLike(boardId, button) {
 						<div>
 							<%=comment.getNicknm()%><br>
 							<%=comment.getCreatedAt()%><br> <span> <%=comment.getContent()%></span>
+
+
+
+							<%
+							if (member != null && member.getMemberId() == comment.getCreatedBy()) { //자신의 댓글만 수정삭제 가능!
+							%>
 							<span>
 								<button onclick="modifyFn(this,<%=comment.getCommentId()%>)"
 									class="btn btn-primary text-right">수정</button>
@@ -660,12 +820,18 @@ function toggleLike(boardId, button) {
 									onclick="replyDelFn(<%=comment.getCommentId()%>,this)"
 									class="btn btn-primary">삭제</button>
 							</span>
+
+							<%
+							}
+							%>
 							<button onclick="replyFn(<%=comment.getCommentId()%>)"
 								class="btn btn-primary">답글</button>
+
+
 						</div>
 						<hr>
 
-						<!-- 각 댓글에 대한 답글 폼과 내용 -->
+						<!------------------------------------------- 답글 영역 ---------------------------------------------->
 						<form name="replyfrm_<%=comment.getCommentId()%>"
 							style="display: none;">
 
@@ -695,10 +861,17 @@ function toggleLike(boardId, button) {
            							 </script>
 
 
+									<%
+									if (member != null && member.getMemberId() == reply.getCreatedBy()) { // 자신이 쓴 답글만 삭제 가능!
+									%>
+
 									<span>
 										<button onclick="deleteReplyFn(<%=reply.getReplyId()%>,this)"
-											class="btn btn-primary">삭제</button>
+											class="btn btn-info">삭제</button>
 									</span>
+									<%
+									}
+									%>
 									<hr>
 								</div>
 								<%
@@ -713,7 +886,7 @@ function toggleLike(boardId, button) {
 								name="content" placeholder="답글을 입력해주세요">
 							<button type="button"
 								onclick="replyInsertFn(<%=comment.getCommentId()%>)"
-								class="btn btn-primary">저장</button>
+								class="btn btn-info">저장</button>
 
 							<hr>
 						</form>
@@ -735,6 +908,10 @@ function replyFn(commentId) {
 
 //---------------------------------------------- 답글 저장 -------------------------------------------------------------------
 function replyInsertFn(parentCommentId) {
+	let loginMember = '<%=member%>';
+	
+	if (loginMember != 'null'){	
+	
     // 답글 추가를 처리하는 함수를 수정합니다.
     var replyForm = document.forms["replyfrm_" + parentCommentId];
     var content = replyForm.elements["content"].value;
@@ -761,12 +938,20 @@ function replyInsertFn(parentCommentId) {
             alert("답글 등록에 실패했습니다. 오류: " + error);
         }
     });
+    } else {
+    	alert("로그인을 하신 후 이용해 주시기 바랍니다.");
+    	location.href='<%=request.getContextPath()%>/login/login.jsp';
+    }
 
    replyForm.elements["content"].value = ''; 
 }
 
 //-------------------------------------- 답글 삭제 ------------------------------------------------------
 function deleteReplyFn(replyId, obj) {
+	// 삭제 확인 창 띄우기
+	var confirmation = confirm("답글을 삭제하시겠습니까?");
+	
+	if(confirmation){
     $.ajax({
         url: "deleteReplyOk.jsp",
         type: "post",
@@ -789,6 +974,7 @@ function deleteReplyFn(replyId, obj) {
     });
     // 제출 후 답글 폼을 숨깁니다.
   /*  replyForm.style.display = 'block';  */
+	}
 }
 
 
@@ -797,7 +983,6 @@ function deleteReplyFn(replyId, obj) {
 				</div>
 			</div>
 		</div>
-
 	</section>
 
 
