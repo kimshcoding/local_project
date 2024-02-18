@@ -12,6 +12,8 @@ public class BoardReport {
 	private String status;
 	private char boardCode;		//신고 게시글 구분코드
 	private int boardNo;		//신고 게시글 번호
+	
+	
 	public int getBoardId() {
 		return boardId;
 	}

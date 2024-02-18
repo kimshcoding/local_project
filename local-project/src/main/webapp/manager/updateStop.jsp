@@ -46,12 +46,7 @@
         int result = psmt.executeUpdate();
 
         if(result > 0){
- %>       	
-      						 
-        	
-        	
-<%        	
-        	
+ 	
         	
             out.print("SUCCESS");
         } else {

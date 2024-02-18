@@ -57,6 +57,28 @@ try {
         member.setStopStartDate(rs.getString("stop_start_date"));
         member.setStopEndDate(rs.getString("stop_end_date"));
     }
+    if(psmt != null) psmt.close();
+    
+    
+    // 현재 로그인한 회원의 report_count 업데이트
+    String updateSql = "UPDATE member m "
+        + "SET m.report_count = ( "
+        + "    SELECT COUNT(*) "
+        + "    FROM board_report br "
+        + "    WHERE br.created_by = m.member_id "
+        + " ) "
+        + "WHERE m.member_id = ? ";
+    
+    psmt = conn.prepareStatement(updateSql);
+    psmt.setInt(1, member.getMemberId());	
+    
+    int result = psmt.executeUpdate();
+
+    if(result > 0){
+        out.print("SUCCESS");
+    } else {
+        out.print("FAIL");
+    }
 
 } catch (Exception e) {
     e.printStackTrace();

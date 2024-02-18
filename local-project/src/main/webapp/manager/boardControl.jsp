@@ -63,23 +63,19 @@
 							<thead class="table-warning">
 								<tr>
 									<th scope="col">NO</th>
-									<th scope="col">신고한 사람</th>
 									<th scope="col">신고일시</th>
+									<th scope="col">신고자(닉네임,이메일,연락처)</th>
+									<th scope="col">신고대상게시글</th>
 									<th scope="col">신고사유</th>
 									<th scope="col">신고처리상태</th>
-									<th scope="col">게시판코드</th>
-									<th scope="col">게시글번호</th>
+									<th scope="col">신고조치내용(경고,삭제)</th>
+									
+									
 								</tr>
 							</thead>
 							<tbody>
 								<tr>
-									<td>1</td>
-									<td>code</td>
-									<td>2024-12-12</td>
-									<td>욕설</td>
-									<td>진행중</td>
-									<td>F</td>
-									<td>25</td>
+									
 
 								</tr>
 							</tbody>

@@ -23,10 +23,16 @@ public class Member extends Reply {
 	private String postCode;     	// 우편주소
 	private String addr;     		// 기본주소
 	private String addrDetail;      // 상세주소
-	
+	private int reportCount;		// 신고된 횟수
 	
 
 	
+	public int getReportCount() {
+		return reportCount;
+	}
+	public void setReportCount(int reportCount) {
+		this.reportCount = reportCount;
+	}
 	public String getLocalExtra() {
 		return localExtra;
 	}

@@ -2,8 +2,8 @@
 	pageEncoding="UTF-8"%>
 <%@ page import="local.vo.*"%>
 <%@ page import="java.sql.*"%>
+<%@ page import="java.util.*"%>
 <%
-Member member = (Member) session.getAttribute("login"); 
 
 request.setCharacterEncoding("UTF-8");
 
@@ -15,18 +15,42 @@ String url = "jdbc:mysql://localhost:3306/localboard";
 String user = "cteam";
 String pass = "1234";
 
+List<Member> mlist = new ArrayList<Member>();
+int reportCount = 0;
 try {
-	Class.forName("com.mysql.cj.jdbc.Driver");
-	conn = DriverManager.getConnection(url, user, pass);
+    Class.forName("com.mysql.cj.jdbc.Driver");
+    conn = DriverManager.getConnection(url, user, pass);
 
-	String sql = " SELECT member_id, email, nicknm, phone, status, created_at, stop_reason, stop_start_date, stop_end_date "
-			   + " FROM member ";
-			  
-	
-	psmt = conn.prepareStatement(sql);
-	rs = psmt.executeQuery();
-	
+    String sql = "SELECT member_id, email, nicknm, phone, status, created_at, stop_reason, stop_start_date, stop_end_date, report_count "
+               + "FROM member ";
+              
+    psmt = conn.prepareStatement(sql);
+    rs = psmt.executeQuery();
 
+    while (rs.next()) {
+        Member member = new Member();
+        member.setMemberId(rs.getInt("member_id"));
+        member.setEmail(rs.getString("email"));
+        member.setNicknm(rs.getString("nicknm"));
+        member.setPhone(rs.getString("phone"));
+        member.setStatus(rs.getString("status"));
+        member.setCreatedAt(rs.getString("created_at"));
+        member.setStopReason(rs.getString("stop_reason"));
+        member.setStopStartDate(rs.getString("stop_start_date"));
+        member.setStopEndDate(rs.getString("stop_end_date"));
+        member.setReportCount(rs.getInt("report_count"));  //신고된 횟수
+
+        mlist.add(member);
+    }
+    
+
+} catch (Exception e) {
+    e.printStackTrace();
+} finally {
+    if (conn != null) conn.close();
+    if (psmt != null) psmt.close();
+    if (rs != null) rs.close();
+}
 %>
 <!DOCTYPE html>
 <html>
@@ -62,6 +86,7 @@ try {
 <!-- responsive style -->
 <link href="<%=request.getContextPath()%>/css/responsive.css"
 	rel="stylesheet" />
+	
 </head>
 
 <body class="sub_page">
@@ -89,51 +114,42 @@ try {
                     <table class="table table-hover table-striped fluid">
                         <thead class="table-warning">
                             <tr>
-                               <th scope="col" class="col-1">NO</th>
-                                <th scope="col" class="col-2">이메일</th>
-                                <th scope="col" class="col-1">닉네임</th>
-                                <th scope="col" class="col-2">전화번호</th>
-                                <th scope="col" class="col-1">가입일시</th>
-                                <th scope="col" class="col-2">회원상태</th>
-                                <th scope="col" class="col-2">정지사유</th>
-                                <th scope="col" class="col-2">정지시작일</th>
-                                <th scope="col" class="col-1">정지종료일</th>
-                                <th scope="col" class="col-1">신고건</th>
-                                <th scope="col" class="col-2">처리</th>
+                                <th class="col-1">NO</th>
+                                <th class="col-2">이메일</th>
+                                <th class="col-1">닉네임</th>
+                                <th class="col-2">전화번호</th>
+                                <th class="col-1">가입일시</th>
+                                <th class="col-2">회원상태</th>
+                                <th class="col-2">정지사유</th>
+                                <th class="col-1">정지시작일</th>
+                                <th class="col-1">정지종료일</th>
+                                <th class="col-1">신고건</th>
+                                <th class="col-2">처리</th>
                             </tr>
                         </thead>
                         <tbody>
                             <%
-                            while (rs.next()){
-                                int memberId = rs.getInt("member_id");
-                                String email = rs.getString("email");
-                                String nicknm = rs.getString("nicknm");
-                                String phone = rs.getString("phone");
-                                String status = rs.getString("status");
-                                String createdAt = rs.getString("created_at");
-                                String stopReason = rs.getString("stop_reason");
-                                String stopStartDate = rs.getString("stop_start_date");
-                                String stopEndDate = rs.getString("stop_end_date");
+                           		for (Member member : mlist) {
                             %>
                             <tr>
-                               <td class="col-1"><%=memberId%></td>
-                                <td class="col-2"><%=email%></td>
-                                <td class="col-1"><%=nicknm%></td>
-                                <td class="col-2"><%=phone%></td>
-                                <td class="col-1"><%=createdAt%></td>
-                                <td class="col-2"><%=status%></td>
-                                <td class="col-2" id="test"><%=stopReason%></td>
-                                <td class="col-2"><%=stopStartDate%></td>
-                                <td class="col-1"><%=stopEndDate%></td>
-                                <td class="col-1">1</td>
+                               	<td class="col-1"><%=member.getMemberId()%></td>
+                                <td class="col-2"><%=member.getEmail()%></td>
+                                <td class="col-1"><%=member.getNicknm()%></td>
+                                <td class="col-2"><%=member.getPhone()%></td>
+                                <td class="col-1"><%=member.getCreatedAt()%></td>
+                                <td class="col-2"><%=member.getStatus()%></td>
+                                <td class="col-2"><%=member.getStopReason()%></td>
+                                <td class="col-1"><%=member.getStopStartDate()%></td>
+                                <td class="col-1"><%=member.getStopEndDate()%></td>                           
+                                <td class="col-1"><%=member.getReportCount()%></td>
                                 <td class="col-2">
                                     <!-- 모달을 트리거하는 버튼 -->
-                                    <button type="button" class="btn btn-danger" data-toggle="modal" data-target="#myModal_<%=memberId%>">정지</button>
-                                    <button type="button" class="btn btn-success">탈퇴</button>
+                                    <button type="button" class="btn btn-danger" data-toggle="modal" data-target="#myModal_<%=member.getMemberId()%>">정지</button>
+                                    <button type="button" class="btn btn-success" onclick="quitFn(<%=member.getMemberId()%>)">탈퇴</button>
                                 </td>
                             </tr>
                             <!-- 모달 -->
-                            <div class="modal fade" id="myModal_<%=memberId%>" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+                            <div class="modal fade" id="myModal_<%=member.getMemberId()%>" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
                                 <div class="modal-dialog modal-dialog-centered" role="document">
                                     <div class="modal-content">
                                         <div class="modal-header">
@@ -144,25 +160,33 @@ try {
                                         </div>
                                         <div class="modal-body">
                                             <!-- Ajax를 사용해 stopReason 업데이트하는 폼 -->
-                                            <form id="updateForm_<%=memberId%>">
-                                                <div class="form-group">
+                                            <form id="updateForm_<%=member.getMemberId()%>">
+                                             <%--    <div class="form-group">
                                                     <label for="stopReason">회원 상태:</label>
-                                                    <input type="text" class="form-control" id="status_<%=memberId%>" value="<%=status%>" required>
-                                                </div>
+                                                    <input type="text" class="form-control" id="status_<%=memberId%>" value="stop" required>
+                                                </div> --%>
+                                                <div class="form-group">
+													<label for="status">회원 상태:</label> 
+														<select
+															class="form-control" id="status_<%=member.getMemberId()%>" name="status">
+													<option>active</option>
+													<option>stop</option>							
+														</select>
+												</div>
                                                 <div class="form-group">
                                                     <label for="stopReason">정지 사유:</label>
-                                                    <input type="text" class="form-control" id="stopReason_<%=memberId%>" value="<%=stopReason%>" required>
+                                                    <input type="text" class="form-control" id="stopReason_<%=member.getMemberId()%>" value="<%=member.getStopReason()%>" required>
                                                 </div>
                                                 <div class="form-group">
                                                     <label for="stopReason">정지시작일:</label>
-                                                    <input type="text" class="form-control" id="stopStartDate_<%=memberId%>" value="<%=stopStartDate%>" required>
+                                                    <input type="text" class="form-control" id="stopStartDate_<%=member.getMemberId()%>" value="<%=member.getStopStartDate()%>" required>
                                                 </div>
                                                 <div class="form-group">
                                                     <label for="stopReason">정지종료일:</label>
-                                                    <input type="text" class="form-control" id="stopEndDate_<%=memberId%>" value="<%=stopEndDate%>" required>
+                                                    <input type="text" class="form-control" id="stopEndDate_<%=member.getMemberId()%>" value="<%=member.getStopEndDate()%>" required>
                                                 </div>                                               
                                                 <div class="text-center">                                             
-                                                <button type="button" class="btn btn-primary" onclick="updateStopReason(<%=memberId%>)">저장</button>
+                                                <button type="button" class="btn btn-primary" onclick="updateStopReason(<%=member.getMemberId()%>)">저장</button>
                                                 </div>
                                             </form>
                                         </div>
@@ -172,6 +196,7 @@ try {
                             <%
                             }
                             %>
+                            
                         </tbody>
                     </table>
                 </div>
@@ -180,7 +205,7 @@ try {
     </div>
 </section>
 
-<!-- Ajax 호출을 위한 스크립트 추가 -->
+<!--------------------------------------------- 회원 정지 처리 영역 ------------------------------------------------------>
 <script>
     function updateStopReason(memberId) {
         var newStatus = $("#status_" + memberId).val();
@@ -212,7 +237,36 @@ try {
             }
         });
     }
+    
 </script>
+
+<script>
+    //------------------------------------ 회원 탈퇴 영역 -----------------------------------------
+    function quitFn(memberId) {
+    	// 탈퇴 확인 창 띄우기
+    	var confirmation = confirm("이 회원을 탈퇴시키시나요?");
+    	
+    	if(confirmation){
+    	$.ajax({
+            type: "POST",
+            url: "updateQuit.jsp", // 업데이트를 처리할 서블릿 또는 서버 측 스크립트 지정
+            data: { member_id: memberId },
+            		
+            success: function(response) {
+                // 성공 처리, 예를 들어 모달 닫기 또는 UI 업데이트                               	 
+            	  
+               alert("탈퇴가 정상적으로 처리되었습니다.");
+            },
+            error: function(error) {
+                // 오류 처리, 예를 들어 오류 메시지 표시
+            	 alert("탈퇴가 처리되지 않았습니다.");
+            }
+        });
+    	}
+    }
+
+</script>
+
 
 	<!-- end about section -->
 
@@ -230,12 +284,3 @@ try {
 
 </body>
 </html>
-<%
-} catch (Exception e) {
-e.printStackTrace();
-} finally {
-if (conn != null) conn.close();
-if (psmt != null) psmt.close();
-if (rs != null) rs.close();
-}
-%>

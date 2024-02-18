@@ -626,7 +626,8 @@ function toggleLike(boardId, button) {
 									<form id="reportForm" method="post">
 
 										<div class="form-group">
-											<label for="reportReason">신고 사유 선택:</label> <select
+											<label for="reportReason">신고 사유 선택:</label> 
+											<select
 												class="form-control" id="reportReason" name="reportReason">
 												<option>스팸홍보/도배글입니다</option>
 												<option>음란물입니다</option>
@@ -649,7 +650,7 @@ function toggleLike(boardId, button) {
 						</div>
 					</div>
 <script>
-    // 폼 전송 함수
+    // 신고하기 
     function submitReport() {
       // reportReason 값을 가져오기
       var reportReason = $("#reportReason").val();
