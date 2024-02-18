@@ -1,6 +1,5 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8"
 	pageEncoding="UTF-8"%>
-	
 <!DOCTYPE html>
 <html>
 <head>
@@ -45,42 +44,55 @@
 		<!-- end header section -->
 	</div>
 
-	<!-- login section -->
+
+
+	<!-- about section -->
 	<section class="about_section layout_padding">
 		<div class="container">
-			<div class="row justify-content-center">
-				<!-- 중앙 정렬 클래스 추가 -->
-				<div class="col-md-6">
-					<div class="detail-box">
-						<div class="heading_container">
-							<h2>로그인</h2>
-						</div>
-						<p>정확한 입력을 해주세요!</p>
-						<form action="loginOk.jsp" method="post">
-							<div class="input-group flex-nowrap">
-								<span class="input-group-text" id="addon-wrapping">Email</span> <input
-									type="email" id="email" name="email" class="form-control" placeholder="email"
-									aria-label="Username" aria-describedby="addon-wrapping">
-							</div>
-							<br>
-							<div class="input-group flex-nowrap">
-								<span class="input-group-text" id="addon-wrapping">비밀번호</span> <input
-									type="password" id="password" name="password" class="form-control" placeholder="password"
-									aria-label="Username" aria-describedby="addon-wrapping">
-							</div>
-							<br>
-							<button type="submit" class="btn btn-primary">로그인</button>
-						</form>
+			<div class="row">
+				<div class="col-lg-12">
+					<%@ include file="header.jsp"%>
+					<div class="heading_container">
+						<h3>게시글 신고</h3>
+
+					</div>
+					<br>
+					<!-- Table Section -->
+					<div>
+						<table class="table table-hover table-striped fluid">
+							<thead class="table-warning">
+								<tr>
+									<th scope="col">NO</th>
+									<th scope="col">신고한 사람</th>
+									<th scope="col">신고일시</th>
+									<th scope="col">신고사유</th>
+									<th scope="col">신고처리상태</th>
+									<th scope="col">게시판코드</th>
+									<th scope="col">게시글번호</th>
+								</tr>
+							</thead>
+							<tbody>
+								<tr>
+									<td>1</td>
+									<td>code</td>
+									<td>2024-12-12</td>
+									<td>욕설</td>
+									<td>진행중</td>
+									<td>F</td>
+									<td>25</td>
+
+								</tr>
+							</tbody>
+						</table>
 					</div>
 				</div>
 			</div>
+
+
 		</div>
+
 	</section>
-
-
-
-
-	<!-- end  login section -->
+	<!-- end about section -->
 
 
 	<!-- info section -->
@@ -92,8 +104,8 @@
 	<!-- footer section -->
 
 
-	<script src="/js/jquery-3.4.1.min.js"></script>
-	<script src="/js/bootstrap.js"></script>
+	<script src="<%=request.getContextPath()%>/js/jquery-3.4.1.min.js"></script>
+	<script src="<%=request.getContextPath()%>/js/bootstrap.js"></script>
 
 </body>
 </html>

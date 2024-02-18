@@ -69,7 +69,7 @@
 							<%			
 							if((memberHeader != null) && (memberHeader.getCodeId() == 'A')){
               				%>
-							<li class="nav-item"><a class="nav-link" href="<%=request.getContextPath()%>/manager/managerControl.jsp">
+							<li class="nav-item"><a class="nav-link" href="<%=request.getContextPath()%>/manager/memberControl.jsp">
 									관리자 </a></li>
 									<%
 										}

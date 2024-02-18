@@ -20,7 +20,7 @@
 		System.out.println("연결성공!");
 		
 		String sql = "INSERT INTO member(email, password, nicknm, phone, addr_extra, addr_post_code, addr_basic, addr_detail, code_id)"
-				   + "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
+				   + "VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'N')";
 		
 		psmt = conn.prepareStatement(sql);
 	    psmt.setString(1, member.getEmail());
@@ -31,7 +31,7 @@
 		psmt.setString(6, request.getParameter("postcode"));	  // addr_post_code
 		psmt.setString(7, request.getParameter("address"));		  // addr_basic
 		psmt.setString(8, request.getParameter("detailAddress")); //addr_detail
-		psmt.setString(9, member.getCodeId()); 
+		/* psmt.setString(9, member.getCodeId());  */
 		
 		insertRow = psmt.executeUpdate();
 		
