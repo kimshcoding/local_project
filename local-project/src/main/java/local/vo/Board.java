@@ -15,31 +15,23 @@ public class Board {
 	private int hit; 			// 조회수
 	private char delyn; 		// 삭제여부
 	private char type;			// 게시판 구분
-	private String nicknm;		// 닉네임
-	private int commentCount;	//댓글수
-	private String localExtra;		//oo동
+	private String nicknm;
+	private int commentCount;   //댓글수
 	
 	
 	
 	
-	
-	public String getLocalExtra() {
-		return localExtra;
+	public int getCommentCount() {
+		return commentCount;
 	}
-	public void setLocalExtra(String localExtra) {
-		this.localExtra = localExtra;
+	public void setCommentCount(int commentCount) {
+		this.commentCount = commentCount;
 	}
 	public String getNicknm() {
 		return nicknm;
 	}
 	public void setNicknm(String nicknm) {
 		this.nicknm = nicknm;
-	}
-	public int getCommentCount() {
-		return commentCount;
-	}
-	public void setCommentCount(int commentCount) {
-		this.commentCount = commentCount;
 	}
 	public int getBoardId() {
 		return boardId;

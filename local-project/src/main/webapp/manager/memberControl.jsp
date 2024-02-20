@@ -11,7 +11,7 @@ Connection conn = null;
 PreparedStatement psmt = null;
 ResultSet rs = null;
 /* String url = "jdbc:mysql://192.168.0.88:3306/localboard";  */
-String url = "jdbc:mysql://localhost:3306/localboard"; 
+String url = "jdbc:mysql://localhost:3306/localboard";
 String user = "cteam";
 String pass = "1234";
 
@@ -22,7 +22,7 @@ try {
     conn = DriverManager.getConnection(url, user, pass);
 
     String sql = "SELECT member_id, email, nicknm, phone, status, created_at, stop_reason, stop_start_date, stop_end_date, report_count "
-               + "FROM member ";
+               + "FROM member WHERE status <> 'quit' ORDER BY created_at DESC "; // quit 값을 제외하고 최신순 결과를 조회
               
     psmt = conn.prepareStatement(sql);
     rs = psmt.executeQuery();
@@ -104,7 +104,7 @@ try {
     <div class="container">
         <div class="row">
             <div class="col-lg-12">
-                <%@ include file="header.jsp"%>
+                <%@ include file="/manager/header.jsp"%>
                 <div class="heading_container">
                     <h3>회원 관리</h3>
                 </div>
@@ -114,7 +114,7 @@ try {
                     <table class="table table-hover table-striped fluid">
                         <thead class="table-warning">
                             <tr>
-                                <th class="col-1">NO</th>
+                                <th class="col-1">ID</th>
                                 <th class="col-2">이메일</th>
                                 <th class="col-1">닉네임</th>
                                 <th class="col-2">전화번호</th>
@@ -144,7 +144,7 @@ try {
                                 <td class="col-1"><%=member.getReportCount()%></td>
                                 <td class="col-2">
                                     <!-- 모달을 트리거하는 버튼 -->
-                                    <button type="button" class="btn btn-danger" data-toggle="modal" data-target="#myModal_<%=member.getMemberId()%>">정지</button>
+                                    <button type="button" class="btn btn-danger" data-toggle="modal" data-target="#myModal_<%=member.getMemberId()%>">수정</button>
                                     <button type="button" class="btn btn-success" onclick="quitFn(<%=member.getMemberId()%>)">탈퇴</button>
                                 </td>
                             </tr>
@@ -153,24 +153,20 @@ try {
                                 <div class="modal-dialog modal-dialog-centered" role="document">
                                     <div class="modal-content">
                                         <div class="modal-header">
-                                            <h5 class="modal-title" id="exampleModalLabel">정지 처리 수정</h5>
+                                            <h5 class="modal-title" id="exampleModalLabel">처리 수정</h5>
                                             <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                                                 <span aria-hidden="true">&times;</span>
                                             </button>
                                         </div>
                                         <div class="modal-body">
                                             <!-- Ajax를 사용해 stopReason 업데이트하는 폼 -->
-                                            <form id="updateForm_<%=member.getMemberId()%>">
-                                             <%--    <div class="form-group">
-                                                    <label for="stopReason">회원 상태:</label>
-                                                    <input type="text" class="form-control" id="status_<%=memberId%>" value="stop" required>
-                                                </div> --%>
+                                            <form id="updateForm_<%=member.getMemberId()%>">                                        
                                                 <div class="form-group">
 													<label for="status">회원 상태:</label> 
 														<select
 															class="form-control" id="status_<%=member.getMemberId()%>" name="status">
 													<option>active</option>
-													<option>stop</option>							
+													<option>stop</option>																									
 														</select>
 												</div>
                                                 <div class="form-group">
@@ -254,7 +250,7 @@ try {
             		
             success: function(response) {
                 // 성공 처리, 예를 들어 모달 닫기 또는 UI 업데이트                               	 
-            	  
+            	   location.reload();
                alert("탈퇴가 정상적으로 처리되었습니다.");
             },
             error: function(error) {

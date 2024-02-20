@@ -1,5 +1,66 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8"
 	pageEncoding="UTF-8"%>
+<%@ page import="local.vo.*"%>
+<%@ page import="java.sql.*"%>
+<%@ page import="java.util.*"%>
+<%
+request.setCharacterEncoding("UTF-8");
+
+Member member = (Member) session.getAttribute("login");
+
+Connection conn = null;
+PreparedStatement psmt = null;
+ResultSet rs = null;
+/* String url = "jdbc:mysql://192.168.0.88:3306/localboard";  */
+String url = "jdbc:mysql://localhost:3306/localboard";
+String user = "cteam";
+String pass = "1234";
+
+List<CommentReport> crlist = new ArrayList<CommentReport>();
+
+int reportCount = 0;
+try {
+	Class.forName("com.mysql.cj.jdbc.Driver");
+	conn = DriverManager.getConnection(url, user, pass);
+
+	int test = member.getMemberId();
+
+	String sql = " SELECT cr.comment_report_id, cr.reason, cr.created_by, cr.created_at, cr.status, c.board_id, c.content, c.board_code, c.comment_id "
+	+ " FROM comment c " + " JOIN comment_report cr ON c.comment_id = cr.comment_id ORDER BY created_at DESC; ";
+
+	psmt = conn.prepareStatement(sql);
+	rs = psmt.executeQuery();
+
+	while (rs.next()) {
+		CommentReport commentreport = new CommentReport();
+		commentreport.setCommentReportId(rs.getInt("comment_report_id"));
+		commentreport.setCreatedBy(rs.getInt("created_by"));
+		commentreport.setCreatedAt(rs.getString("created_at"));
+		commentreport.setReason(rs.getString("reason"));
+		commentreport.setStatus(rs.getString("status"));
+		commentreport.setContent(rs.getString("content"));
+		commentreport.setBoardId(rs.getInt("board_id"));
+		commentreport.setBoardCode(rs.getString("board_code").charAt(0));
+		commentreport.setCommentId(rs.getInt("comment_id"));
+
+		crlist.add(commentreport);
+	}
+
+	sql = "SELECT board_id, content, board_code FROM comment ";
+
+} catch (Exception e) {
+	e.printStackTrace();
+} finally {
+	if (conn != null)
+		conn.close();
+	if (psmt != null)
+		psmt.close();
+	if (rs != null)
+		rs.close();
+}
+%>
+
+
 <!DOCTYPE html>
 <html>
 <head>
@@ -54,8 +115,9 @@
 					<%@ include file="header.jsp"%>
 					<div class="heading_container">
 						<h3>댓글 신고</h3>
-
 					</div>
+					<P>F: 자유게시판 &nbsp;|&nbsp; T: 같이해요 &nbsp;|&nbsp; Q: Q&amp;A
+						&nbsp;|&nbsp; C: 동네업체 &nbsp;|&nbsp; S: 나작동</P>
 					<br>
 					<!-- Table Section -->
 					<div>
@@ -63,25 +125,82 @@
 							<thead class="table-warning">
 								<tr>
 									<th scope="col">NO</th>
-									<th scope="col">신고한 사람</th>
-									<th scope="col">신고일시</th>
-									<th scope="col">신고사유</th>
-									<th scope="col">신고처리상태</th>
 									<th scope="col">게시판코드</th>
 									<th scope="col">게시글번호</th>
+									<th scope="col">댓글내용</th>
+									<th scope="col">신고된사람ID</th>
+									<th scope="col">신고일시</th>
+									<th scope="col">신고사유</th>
+									<th scope="col">상태</th>
+									<th scope="col">처리</th>
 								</tr>
 							</thead>
 							<tbody>
+								<%
+								for (CommentReport commentreport : crlist) {
+								%>
 								<tr>
-									<td>1</td>
-									<td>code</td>
-									<td>2024-12-12</td>
-									<td>욕설</td>
-									<td>진행중</td>
-									<td>F</td>
-									<td>25</td>
+									<td><%=commentreport.getCommentReportId()%></td>
+									<td><%=commentreport.getBoardCode()%></td>
+									<td><%=commentreport.getBoardId()%></td>
+									<td>
+										<div class="row">
 
+											<div class="col-10 text-truncate">
+												<%=commentreport.getContent()%>
+											</div>
+
+										</div>
+									</td>
+									<td><%=commentreport.getCreatedBy()%></td>
+									<td><%=commentreport.getCreatedAt()%></td>
+									<td><%=commentreport.getReason()%></td>
+									<td><%=commentreport.getStatus()%>
+										<button type="button" class="btn btn-success" data-toggle="modal" data-target="#myModal_<%=commentreport.getCommentReportId()%>">수정</button>	
+									<td>       <button type="button" class="btn btn-danger" onclick="quitFn(<%=commentreport.getCommentId()%>)">삭제</button>	</td>
 								</tr>
+								<!-- 모달 -->
+								<div class="modal fade"
+									id="myModal_<%=commentreport.getCommentReportId()%>"
+									tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel"
+									aria-hidden="true">
+									<div class="modal-dialog modal-dialog-centered" role="document">
+										<div class="modal-content">
+											<div class="modal-header">
+												<h5 class="modal-title" id="exampleModalLabel">게시글 상태
+													수정</h5>
+												<button type="button" class="close" data-dismiss="modal"
+													aria-label="Close">
+													<span aria-hidden="true">&times;</span>
+												</button>
+											</div>
+											<div class="modal-body">
+												<!-- Ajax를 사용해 stopReason 업데이트하는 폼 -->
+												<form
+													id="updateForm_<%=commentreport.getCommentReportId()%>">
+													<div class="form-group">
+														<label for="status">선 택 :</label> <select
+															class="form-control"
+															id="status_<%=commentreport.getCommentReportId()%>"
+															name="status">
+															<option>예정</option>
+															<option>경고</option>
+															<option>삭제</option>
+															<option>처리완료</option>
+														</select>
+													</div>
+													<div class="text-center">
+														<button type="button" class="btn btn-primary"
+															onclick="updateBoardReport(<%=commentreport.getCommentReportId()%>)">저장</button>
+													</div>
+												</form>
+											</div>
+										</div>
+									</div>
+								</div>
+								<%
+								}
+								%>
 							</tbody>
 						</table>
 					</div>
@@ -92,6 +211,62 @@
 		</div>
 
 	</section>
+
+	<!--------------------------------------------- 신고 댓글 경고 처리 영역 ------------------------------------------------------>
+	<script>
+    function updateBoardReport(commentReportId) {
+        var newStatus = $("#status_" + commentReportId).val();
+        
+        
+        $.ajax({
+            type: "POST",
+            url: "updateCommentReport.jsp", // 업데이트를 처리할 서블릿 또는 서버 측 스크립트 지정
+            data: { comment_report_id: commentReportId,
+            	    status: newStatus},
+            		
+            success: function(response) {
+                // 성공 처리, 예를 들어 모달 닫기 또는 UI 업데이트
+            	   // 서버에서 받은 응답 데이터                              	 
+            	   location.reload();
+
+                // 모달 닫기
+                $("#myModal_" + commentReportId).modal('hide');
+            },
+            error: function(error) {
+                // 오류 처리, 예를 들어 오류 메시지 표시
+                console.error("정지 사유 업데이트 오류:", error);
+            }
+        });
+    }
+    
+</script>
+
+	<script>
+    //------------------------------------ 신고 댓글 삭제 영역 -----------------------------------------
+    function quitFn(commentId) {
+    	// 탈퇴 확인 창 띄우기
+    	var confirmation = confirm("이 게시글을 삭제시키시나요?");
+    	
+    	if(confirmation){
+    	$.ajax({
+            type: "POST",
+            url: "delCommentReport.jsp", // 업데이트를 처리할 서블릿 또는 서버 측 스크립트 지정
+            data: { comment_id: commentId },
+            		
+            success: function(response) {
+                // 성공 처리, 예를 들어 모달 닫기 또는 UI 업데이트                               	 
+            	  
+               alert("신고 게시글 삭제가 처리되었습니다.");
+            },
+            error: function(error) {
+                // 오류 처리, 예를 들어 오류 메시지 표시
+            	 alert("신고 게시글 삭제가 처리되지 않았습니다.");
+            }
+        });
+    	}
+    }
+
+</script>
 	<!-- end about section -->
 
 

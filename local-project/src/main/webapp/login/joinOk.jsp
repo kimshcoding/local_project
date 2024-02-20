@@ -1,5 +1,8 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8"
     pageEncoding="UTF-8"%>
+<%@ page import="java.security.MessageDigest" %>
+<%@ page import="java.security.NoSuchAlgorithmException" %>
+<%@ page import="java.math.BigInteger" %>
 <%@page import="java.sql.*"%>
 
 <%
@@ -19,19 +22,21 @@
 		conn = DriverManager.getConnection(url,user,pass);
 		System.out.println("연결성공!");
 		
-		String sql = "INSERT INTO member(email, password, nicknm, phone, addr_extra, addr_post_code, addr_basic, addr_detail, code_id)"
-				   + "VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'N')";
+		 // 비밀번호를 SHA-256으로 암호화
+        String hashedPassword = hashPassword(member.getPassword());
+		
+        String sql = "INSERT INTO member(email, password, nicknm, phone, addr_extra, addr_post_code, addr_basic, addr_detail, created_at)"
+				   + "VALUES (?, ?, ?, ?, ?, ?, ?, ?, now())";
 		
 		psmt = conn.prepareStatement(sql);
 	    psmt.setString(1, member.getEmail());
-		psmt.setString(2, member.getPassword());
+		psmt.setString(2, hashedPassword);
 		psmt.setString(3, member.getNicknm());
 		psmt.setString(4, member.getPhone());
 		psmt.setString(5, request.getParameter("extraAddress"));  // addr_extra
 		psmt.setString(6, request.getParameter("postcode"));	  // addr_post_code
 		psmt.setString(7, request.getParameter("address"));		  // addr_basic
 		psmt.setString(8, request.getParameter("detailAddress")); //addr_detail
-		/* psmt.setString(9, member.getCodeId());  */
 		
 		insertRow = psmt.executeUpdate();
 		
@@ -61,6 +66,27 @@
 	}
 	
 	
-	
-	
+%>
+
+<%!
+    // 비밀번호를 SHA-256으로 암호화하는 메서드
+    private String hashPassword(String password) {
+        try {
+            MessageDigest md = MessageDigest.getInstance("SHA-256");
+            byte[] bytes = md.digest(password.getBytes());
+            BigInteger bigInt = new BigInteger(1, bytes);
+            String hashedPassword = bigInt.toString(16);
+
+            // 32자리가 되지 않을 경우 앞에 0을 채워줌
+            while (hashedPassword.length() < 32) {
+                hashedPassword = "0" + hashedPassword;
+            }
+
+            return hashedPassword;
+        } catch (NoSuchAlgorithmException e) {
+            e.printStackTrace();
+            // 예외 처리 - 적절한 방식으로 처리하세요.
+            return null;
+        }
+    }
 %>

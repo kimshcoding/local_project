@@ -10,7 +10,7 @@
     request.setCharacterEncoding("UTF-8");
 
 	  String directory = "C:\\Users\\migue\\git\\local_project\\local-project\\src\\main\\webapp\\upload"; 
-	/* String directory = "D:\\workspaceBom\\local\\src\\main\\webapp\\upload"; */
+/* 	 String directory = "D:\\workspaceBom\\local\\src\\main\\webapp\\upload"; */ 
     int sizeLimit = 100 * 1024 * 1024; // 100mb 제한
 	String path_files = directory.split("webapp")[1]; 
 	System.out.println("path_files : " + path_files);
@@ -43,8 +43,8 @@
 
     Connection conn = null;
     PreparedStatement psmt = null;
-  	/* String url = "jdbc:mysql://192.168.0.88:3306/localboard";  */
     String url = "jdbc:mysql://localhost:3306/localboard"; 
+  /*   String url = "jdbc:mysql://localhost:3306/localboard"; */
     String user = "cteam";
     String pass = "1234";
 

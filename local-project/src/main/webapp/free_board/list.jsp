@@ -31,7 +31,7 @@ try {
 	conn = DriverManager.getConnection(url, user, pass);
 
 	String totalSql = "SELECT count(*) as cnt " + "  FROM board b      " + " INNER JOIN member m"
-	+ " ON b.created_by = m.member_id   " + " WHERE b.delyn = 'N'";
+	+ " ON b.created_by = m.member_id   " + " WHERE b.delyn = 'N' AND b.type = 'F'"; // F : 자유게시판 
 
 	if (searchType != null) {
 		if (searchType.equals("title")) {
@@ -52,7 +52,7 @@ try {
 	if (rs.next()) {
 		totalCnt = rs.getInt("cnt");
 	}
-	System.out.println(totalCnt);
+	
 
 	if (rs != null)
 		rs.close();
@@ -64,7 +64,7 @@ try {
 
 	rs = null;
 	String sql = "SELECT board_id, title, m.nicknm, b.created_at, b.hit, m.addr_extra " + "  FROM board b      "
-	+ " INNER JOIN member m" + " ON b.created_by = m.member_id   " + " WHERE b.delyn = 'N'";
+	+ " INNER JOIN member m" + " ON b.created_by = m.member_id   " + " WHERE b.delyn = 'N' AND b.type = 'F'"; // F : 자유게시판 
 
 	if (searchType != null) {
 		if (searchType.equals("title")) {
@@ -171,7 +171,7 @@ try {
             	if(loginMember != 'null'){
             		location.href='write.jsp';
             }else{
-            	alert("로그인후에 처리하세요");
+            	alert("로그인을 하신 후 이용해 주시기 바랍니다.");
             	location.href='<%=request.getContextPath()%>/login/login.jsp';
             	}
             }
@@ -208,9 +208,11 @@ try {
                                 <td><%=addrExtra%></td>
                                 <td>
                                     <div class="row">
+                                                                                                     
                                         <div class="col-8 text-truncate">
                                             <a href="view.jsp?board_id=<%=boardId%>"><%=title%></a>
-                                        </div>
+                                        </div>                                                                            
+                                        
                                     </div>
                                 </td>
                                 <td><%=createdAt%></td>

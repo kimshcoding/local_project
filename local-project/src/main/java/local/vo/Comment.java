@@ -8,8 +8,17 @@ public class Comment extends CommentEdit {
 	private String createdAt;	// 등록일시
 	private String content;		// 내용
 	private String nicknm;		// 닉네임
+	private char boardCode;
 	
 	
+	
+	
+	public char getBoardCode() {
+		return boardCode;
+	}
+	public void setBoardCode(char boardCode) {
+		this.boardCode = boardCode;
+	}
 	public String getNicknm() {
 		return nicknm;
 	}

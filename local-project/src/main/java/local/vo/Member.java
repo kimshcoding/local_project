@@ -3,7 +3,7 @@ package local.vo;
 public class Member extends Reply {
 	private int memberId;			// 회원 ID (기본키)
 	private String localId;			// 지역 ID
-	private char codeId;  	    // 권한코드 ID
+	private char codeId;  			// 권한코드 ID
 	private String email;			// 이메일
 	private String password;        // 비밀번호
 	private String nicknm;			// 닉네임
@@ -19,10 +19,7 @@ public class Member extends Reply {
 	private int modifiedBy;			// 수정한 회원 ID
 	private String modifiedIp;		// 수정한 사람 IP
 	private String profilephoto;	// 프로필 사진
-	private String localExtra;      // 참고항목(OO동)
-	private String postCode;     	// 우편주소
-	private String addr;     		// 기본주소
-	private String addrDetail;      // 상세주소
+	private String addrExtra;      // 참고항목(OO동)
 	private int reportCount;		// 신고된 횟수
 	
 
@@ -33,29 +30,11 @@ public class Member extends Reply {
 	public void setReportCount(int reportCount) {
 		this.reportCount = reportCount;
 	}
-	public String getLocalExtra() {
-		return localExtra;
+	public String getAddrExtra() {
+		return addrExtra;
 	}
-	public void setLocalExtra(String localExtra) {
-		this.localExtra = localExtra;
-	}
-	public String getPostCode() {
-		return postCode;
-	}
-	public void setPostCode(String postCode) {
-		this.postCode = postCode;
-	}
-	public String getAddr() {
-		return addr;
-	}
-	public void setAddr(String addr) {
-		this.addr = addr;
-	}
-	public String getAddrDetail() {
-		return addrDetail;
-	}
-	public void setAddrDetail(String addrDetail) {
-		this.addrDetail = addrDetail;
+	public void setAddrExtra(String addrExtra) {
+		this.addrExtra = addrExtra;
 	}
 	public int getMemberId() {
 		return memberId;

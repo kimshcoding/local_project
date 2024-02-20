@@ -35,6 +35,8 @@
             psmt.setInt(2, member.getMemberId());
             rs = psmt.executeQuery();
 
+            
+            
             if (!rs.next()) {
                 // 사용자가 아직 좋아요를 누르지 않았으면 좋아요 추가
                 String insertSql = "INSERT INTO board_like(board_id, created_by, created_ip, created_at, count) VALUES(?, ?, 1.0, now(), 1)";

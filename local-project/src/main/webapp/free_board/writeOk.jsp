@@ -28,17 +28,17 @@
     board.setContent(multi.getParameter("content"));
     
     
-    String member_idParam = request.getParameter("member_id");
+    String memberIdParam = request.getParameter("member_id");
 
-    int member_id = 0;
-    if (member_idParam != null && !member_idParam.equals("")) {
-    	member_id = Integer.parseInt(member_idParam);
+    int memberId = 0;
+    if (memberIdParam != null && !memberIdParam.equals("")) {
+    	memberId = Integer.parseInt(memberIdParam);
     }
 
 
     Connection conn = null;
     PreparedStatement psmt = null;
-    String url = "jdbc:mysql://localhost:3306/localboard";
+    String url = "jdbc:mysql://192.168.0.88/localboard";
     String user = "cteam";
     String pass = "1234";
 
@@ -54,8 +54,8 @@
         String sql = "INSERT INTO board_file(created_by, created_at, created_ip, modified_at, modified_by, modified_ip) VALUES(?, now(), 'test', now(), ?, ?)";
         psmt = conn.prepareStatement(sql);
 
-        psmt.setInt(1, member_id); // 현재 접속한 회원 ID를 가져옴!
-        psmt.setInt(2, member_id); // 수정한 회원 ID로 변경
+        psmt.setInt(1, memberId); // 현재 접속한 회원 ID를 가져옴!
+        psmt.setInt(2, memberId); // 수정한 회원 ID로 변경
         psmt.setString(3, request.getRemoteAddr()); // 수정한 사람 IP로 변경
 
         psmt.executeUpdate();
@@ -102,8 +102,8 @@
         psmt.setString(2, board.getContent());
         psmt.setInt(3, fileId);
         psmt.setString(4, ipAddress);
-        psmt.setInt(5, member_id);
-        psmt.setInt(6, member_id);
+        psmt.setInt(5, memberId);
+        psmt.setInt(6, memberId);
         result = psmt.executeUpdate();
         
         

@@ -11,6 +11,8 @@ String boardIdParam = request.getParameter("board_id");
 
 int before = 0; // 이전글 변수 초기화
 int after = 0; // 다음글 변수 초기화
+int createdBy = 0;
+
 
 int boardId = 0;
 if (boardIdParam != null && !boardIdParam.equals("")) {
@@ -191,6 +193,7 @@ try {
 		comment.setCreatedAt(rs.getString("created_at"));
 		comment.setModifiedAt(rs.getString("modified_at"));
 		comment.setCreatedBy(rs.getInt("created_by"));
+		createdBy = rs.getInt("created_by");
 
 		clist.add(comment);
 	}
@@ -626,8 +629,7 @@ function toggleLike(boardId, button) {
 									<form id="reportForm" method="post">
 
 										<div class="form-group">
-											<label for="reportReason">신고 사유 선택:</label> 
-											<select
+											<label for="reportReason">신고 사유 선택:</label> <select
 												class="form-control" id="reportReason" name="reportReason">
 												<option>스팸홍보/도배글입니다</option>
 												<option>음란물입니다</option>
@@ -649,7 +651,7 @@ function toggleLike(boardId, button) {
 							</div>
 						</div>
 					</div>
-<script>
+					<script>
     // 신고하기 
     function submitReport() {
       // reportReason 값을 가져오기
@@ -783,6 +785,7 @@ function toggleLike(boardId, button) {
 					</h5>
 
 
+
 					<!---------------------------------------------------- 댓글 영역 ------------------------------------------------------->
 
 					<form name="replyfrm" class="form-inline mx-auto">
@@ -806,9 +809,30 @@ function toggleLike(boardId, button) {
 						for (Comment comment : clist) {
 						%>
 						<div>
+						
+							<div class="text-right">
+								<button class="btn btn-warning"
+									onclick="showReportOptions(this,<%=comment.getCommentId()%>)">
+									<i class="bi bi-brightness-alt-high-fill"></i>
+								</button>
+								<div id="reportOptions_<%=comment.getCommentId()%>"
+									class="d-none mt-2">
+									<label for="reportReason_<%=comment.getCommentId()%>">신고
+										이유:</label> <select id="reportReason_<%=comment.getCommentId()%>"
+										class="form-select">
+										<option>스팸</option>
+										<option>부적절한 콘텐츠</option>
+										<option>공격적인 언어</option>
+										<option>개인정보 노출</option>
+									</select>
+									<button class="btn btn-warning mt-2"
+										onclick="reportComment(this,<%=comment.getCommentId()%>)">신고</button>
+								</div>
+							</div>
+						
 							<%=comment.getNicknm()%><br>
-							<%=comment.getCreatedAt()%><br> <span> <%=comment.getContent()%></span>
-
+							<%=comment.getCreatedAt()%><br> 
+							<span> <%=comment.getContent()%></span>
 
 
 							<%
@@ -895,7 +919,39 @@ function toggleLike(boardId, button) {
 						}
 						%>
 					</div>
-
+					<script>
+    // 댓글 신고 옵션 표시/숨김 토글
+    function showReportOptions(obj, commentId) {
+        var reportOptions = document.getElementById('reportOptions_' + commentId);
+        reportOptions.classList.toggle('d-none');
+    }
+    
+    function reportComment(obj, commentId) {
+        var reportReason = $("#reportReason_" + commentId).val();
+        var createdBy = '<%=createdBy%>';
+        
+        
+        $.ajax({
+            type: "POST",
+            url: "commentReport.jsp", // 실제 엔드포인트로 변경
+            data: {
+                'commentId': commentId,
+                'reportReason': reportReason,
+                'createdBy' : createdBy
+            },
+            success: function (response) {
+                alert("댓글 신고가 접수되었습니다.");
+            },
+            error: function (error) {
+                console.error(error);
+                alert("에러");
+            }
+        });
+    }
+  
+    
+    
+</script>
 
 
 

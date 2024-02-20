@@ -26,8 +26,8 @@ PagingVO pagingVO = null;
 Connection conn = null;
 PreparedStatement psmt = null;
 ResultSet rs = null;
-/* String url = "jdbc:mysql://192.168.0.88:3306/localboard";  */
-String url = "jdbc:mysql://localhost:3306/localboard"; 
+	String url = "jdbc:mysql://localhost:3306/localboard"; 
+/*  String url = "jdbc:mysql://localhost:3306/localboard"; */  
 String user = "cteam";
 String pass = "1234";
 
@@ -64,7 +64,7 @@ try {
 			if (psmt != null) psmt.close();
 
 			//paging 객체 생성
-			pagingVO = new PagingVO(nowPage, totalCnt, 10);
+			pagingVO = new PagingVO(nowPage, totalCnt, 8);
 	
 			rs = null;
 	
@@ -72,14 +72,32 @@ try {
 	//---------------------- 동네업체 게시판 목록 데이터 가져오기 ---------------------------------------------
  		
 	 /*	file_id로 그룹을 만들고, 그중에 file_ord가 가장 큰 값을 가져오는 쿼리문 */
-	 String sql = " SELECT lb.lb_id, lb.title, lb.local_id, m.nicknm, lb.created_at, lb.hit, lb.content, bf.file_id, max_fd.file_thumbnail_nm, max_fd.file_real_nm, max_fd.file_origin_nm " 
+	 /* String sql = " SELECT lb.lb_id, lb.title, lb.local_id, m.nicknm, lb.created_at, lb.hit, lb.content, bf.file_id, max_fd.file_thumbnail_nm, max_fd.file_real_nm, max_fd.file_origin_nm " 
 			 +" FROM  local_board lb " 
 			 +" INNER JOIN  member m ON lb.created_by = m.member_id "
 			 +" INNER JOIN  board_file bf ON bf.file_id = lb.file_id "
 			 +" INNER JOIN (  SELECT   fd.file_id,    fd.file_thumbnail_nm,  fd.file_real_nm,  fd.file_origin_nm,  fd.file_ord "
 			 +" FROM  board_file_detail fd INNER JOIN ( SELECT file_id, MAX(file_ord) AS max_file_ord "
 			        +" FROM board_file_detail GROUP BY file_id ) AS temp_fd ON fd.file_id = temp_fd.file_id AND fd.file_ord = temp_fd.max_file_ord )"
-			+" AS max_fd ON bf.file_id = max_fd.file_id WHERE  lb.delyn = 'N'"; 
+			+" AS max_fd ON bf.file_id = max_fd.file_id WHERE  lb.delyn = 'N'";  */
+	
+			String sql =  " SELECT lb.lb_id, lb.title, lb.local_id,  m.nicknm, lb.created_at, lb.hit, lb.content, "
+				 	 +" 	bf.file_id, max_fd.file_thumbnail_nm,  max_fd.file_real_nm, max_fd.file_origin_nm, "
+				   	+ "    	COALESCE(ll.total_likes, 0) AS total_likes, "
+				    + "   	COALESCE(r.total_reviews, 0) AS total_reviews " 
+				    + " 	FROM local_board lb  "
+				    + " 	INNER JOIN member m ON lb.created_by = m.member_id "
+				    + " 	INNER JOIN board_file bf ON bf.file_id = lb.file_id "
+				    + " 	INNER JOIN (SELECT  fd.file_id, fd.file_thumbnail_nm, fd.file_real_nm, fd.file_origin_nm, fd.file_ord "
+				    + "   	FROM board_file_detail fd "
+				    +"  	INNER JOIN ( SELECT file_id, MAX(file_ord) AS max_file_ord FROM board_file_detail "
+				    +"      GROUP BY file_id ) temp_fd ON fd.file_id = temp_fd.file_id AND fd.file_ord = temp_fd.max_file_ord ) "
+				    +"  	max_fd ON bf.file_id = max_fd.file_id "
+				    +" 		LEFT JOIN (SELECT lb_id, SUM(count) AS total_likes "
+				    +"    	FROM local_like GROUP BY lb_id) ll ON lb.lb_id = ll.lb_id "
+				    +" 		LEFT JOIN (SELECT lb_id, COUNT(review_id) AS total_reviews "
+				    +"   	FROM review WHERE delyn = 'N' "
+				    +"  	GROUP BY  lb_id) r ON lb.lb_id = r.lb_id WHERE  lb.delyn = 'N'";
 	
 /* 테이블 inner join 해서 모든 것을 가져오는 쿼리문 			
 	String sql= " select * from local_board lb inner join member m on lb.created_by = m.member_id JOIN board_file bf on lb.file_id = bf.file_id JOIN board_file_detail bfd on bfd.file_id = bf.file_id ";		
@@ -107,6 +125,10 @@ try {
 
 	rs = psmt.executeQuery();
 	//---------------------- 동네업체 게시판 목록 데이터 가져오기 ---------------------------------------------
+	
+	//-----------------------좋아요 카운트 수 가져오기------------------------------------------------------
+	
+
 %>
 
 
@@ -187,10 +209,17 @@ try {
                 </form>
             </div>
 			<!-- ---------------------검색창(끝) ------------------------------>
+			<%
+				if((member!=null)&&(member.getCodeId() == 'C')){
+			%>
 			<div class="text-right">
 				<button onclick="location.href='write.jsp'" type="button"
 					class="btn btn-info">글쓰기</button>
 			</div>
+			<%
+				}
+			%>
+			
 			<br>
 			<div class="row">
 				<%
@@ -204,24 +233,23 @@ try {
 						String content=rs.getString("content");
 						String file_real_nm= rs.getString("file_real_nm");
 						String file_thumbnail_nm=rs.getString("file_thumbnail_nm");
-						
-					
+						int totalLikes =rs.getInt("total_likes");
+						int totalRivews=rs.getInt("total_reviews");
 				%>
 
 
 				<!-- --------------------------------게시글 출력부분(시작)--------------------------------------- -->
-				<div class="col-md-3">
-					<div class="card" style="width: 18rem;">
-						<img
-							src="<%=request.getContextPath()%><%= file_thumbnail_nm %>/<%= file_real_nm %>"
-							class="card-img-top" alt="...">
+				<div class="col-md-3 mt-2 mb-2">
+					<div class="card" style="width: 18rem; height: 420px;">
+					<img src="<%=request.getContextPath()%><%= file_thumbnail_nm %>/<%= file_real_nm %>" class="card-img-top" alt="..." height="200">
+
 						<div class="card-body">
 							<h5 class="card-title d-inline-block text-truncate"
 								style="max-width: 250px;">
 								<a href="view.jsp?board_id=<%=lb_id%>"><%=title%></a>
 							</h5>
-							<p class="card-text d-inline-block text-truncate"
-								style="max-width: 250px; max-height: 100px"><%=content %></p>
+					<%-- 		<h5 class="card-text d-inline-block text-truncate"
+								style="max-width: 250px; max-height: 100px"><%=content %></h5> --%>
 
 							<div
 								class="d-flex justify-content-between border-top border-secondary p-4">
@@ -233,10 +261,10 @@ try {
 								</div>
 								<div class="d-flex align-items-center">
 									<small class="ms-3"><i
-										class="fa fa-heart text-secondary me-2"></i> 10 </small> <small
+										class="fa fa-heart text-secondary me-2"></i>&nbsp<%=totalLikes%>&nbsp</small> <small
 										class="ms-3"><i class="fa fa-eye text-secondary me-2"></i>
 										<%=hit%> </small> <small class="ms-3"><i
-										class="fa fa-comment text-secondary me-2"></i> 5 </small>
+										class="fa fa-comment text-secondary me-2"></i>&nbsp<%=totalRivews%>&nbsp</small>
 
 								</div>
 							</div>

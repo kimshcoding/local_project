@@ -32,16 +32,14 @@
 							
 							<li class="nav-item"><a class="nav-link" href="<%=request.getContextPath()%>/free_board/list.jsp">
 									자유게시판 </a></li>
-							<%-- <li class="nav-item"><a class="nav-link" href="<%=request.getContextPath()%>/news_board/list.jsp">
-									동네소식 </a></li> --%>
+							
 							<li class="nav-item"><a class="nav-link" href="<%=request.getContextPath()%>/together_board/list.jsp">
 									같이해요 </a></li>
 							<li class="nav-item"><a class="nav-link" href="<%=request.getContextPath()%>/qa_board/list.jsp">
 									Q &amp; A </a></li>
 							<li class="nav-item"><a class="nav-link" href="<%=request.getContextPath()%>/company_board/list.jsp">
 									동네업체 </a></li>
-							<%-- <li class="nav-item"><a class="nav-link" href="<%=request.getContextPath()%>/compliment_board/list.jsp">
-									칭찬해요 </a></li> --%>
+							
 							<li class="nav-item"><a class="nav-link" href="<%=request.getContextPath()%>/smalltown_board/list.jsp">
 									나작동 </a></li>
 							<li class="nav-item"><a class="nav-link" href="<%=request.getContextPath()%>/notice_board/list.jsp">
@@ -49,19 +47,21 @@
 							<%
 								if(memberHeader == null){
 							%>
-							<li class="nav-item"><a class="nav-link" href="<%=request.getContextPath()%>/login/join.jsp">
+							<li class="nav-item"><a class="nav-link" href="<%=request.getContextPath()%>/login/joinTerms.jsp">
 									회원가입 </a></li>					 		
 							<li class="nav-item"><a class="nav-link" href="<%=request.getContextPath()%>/login/login.jsp">
 									로그인 </a></li>
-							<li class="nav-item"><a class="nav-link" href="<%=request.getContextPath()%>/login/loginMain.jsp">
-									통합로그인 </a></li>		
+									
 							<%
 								}else{
 							%>
-							<li class="nav-item"><a class="nav-link" href="<%=request.getContextPath()%>/my_page/myPageList.jsp">
+							
+							<li class="nav-item"><a class="nav-link" href="<%=request.getContextPath()%>/my_page/myPageList.jsp?
+							memberId=<%=memberHeader.getMemberId()%>">
 									<i class="fa-solid fa-user"></i><%=memberHeader.getNicknm() %></a></li>
 							<li class="nav-item"><a class="nav-link" href="<%=request.getContextPath()%>/login/logOut.jsp">
 									로그아웃 </a></li>
+									
 							<%
 								}
 							%>

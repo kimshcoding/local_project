@@ -3,6 +3,8 @@
 <%@ page import="local.vo.Member"%>
 
 <%
+//폼이 submit 될때, 입력양식에 값이 없으면 알럿이 뜸
+
 Member member = (Member) session.getAttribute("login");
 
 if (member == null) {
@@ -62,7 +64,34 @@ if (member == null) {
 	text-align: center;
 }
 </style>
+ <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+<script>
+$(document).ready(function() {
+    $('#frm').on('submit', function(e) {
+        // 첨부파일 입력 여부 확인
+        var fileInputExists = false;
+        $('.uploadUl li input[type="file"]').each(function() {
+            if ($(this).val() !== "") {
+                fileInputExists = true;
+                return false; // 하나라도 찾으면 루프 중단
+            }
+        });
+        if (!fileInputExists) {
+            alert("첨부파일을 최소 1개 이상 업로드해주세요.");
+            e.preventDefault(); // 폼 제출 중단
+            return false;
+        }
 
+        // 파일 입력이 있는 경우, 빈 파일 입력 필드 제거
+        var leLength = $(".uploadUl li").length;
+        for(var i = 0; i < leLength; i++) {
+            if ($("input[name='file" + (i + 1) + "']").val() == "") {
+                $("input[name='file" + (i + 1) + "']").parent("li").remove();
+            }
+        }
+    });
+});
+</script> 
 
 </head>
 
@@ -87,12 +116,12 @@ if (member == null) {
 							<button onclick="location.href='list.jsp'" class="btn btn-secondary">목록</button>          
                 		</div><br>
 
-						<form action="writeOk.jsp?member_id=<%=member.getMemberId()%>" method="post" name="frm" enctype="multipart/form-data" id="frm">
+						<form action="writeOk.jsp?member_id=<%=member.getMemberId()%>" method="post" name="frm" enctype="multipart/form-data" id="frm" onsubmit="return validateForm();">
 							<div class="input-group flex-nowrap">
-								<span class="input-group-text" id="addon-wrapping">제목</span> <input
-									type="text" class="form-control" placeholder="제목을 입력하세요."
+								<span class="input-group-text" id="addon-wrapping">제목</span> 
+								<input type="text" class="form-control" placeholder="제목을 입력하세요."
 									aria-label="Username" aria-describedby="addon-wrapping"
-									name="title">
+									name="title" required>
 							</div>
 							<br>
 
@@ -100,7 +129,7 @@ if (member == null) {
 								<span class="input-group-text justify-content-center">내용</span>
 								<textarea id="summernote" class="form-control"
 									aria-label="With textarea" placeholder="내용을 입력하세요." rows="10"
-									name="content"></textarea>
+									name="content" required></textarea>
 
 								<script>
                                 $('#summernote').summernote({
@@ -146,12 +175,12 @@ if (member == null) {
 							<!-- ---------- 첨부파일 추가 및 삭제---------------------- -->
 	
 		 
-		 
-		 
-<!-- 	폼 제출시 첨부파일이 추가가 안 된 입력양식을 삭제하는 자바스크립트 (시작) -->
-		 <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
-		 <script>
-		 $(document).ready(function() {
+		  <script>
+		
+	/* 	 
+	폼 제출시 첨부파일이 추가가 안 된 입력양식을 삭제하는 자바스크립트
+	저장 버튼 클릭시 파일이 첨부되지 않은 양식을 삭제함 
+	 	 $(document).ready(function() {
 		     $('#frm').on('submit', function() {
 		         var leLength = $(".uploadUl li").length;
 		         for(var i = 0; i < leLength; i++) {
@@ -161,7 +190,7 @@ if (member == null) {
 		         }
 		     });
 		 });
-		
+		   */
 		/* 플러스 버튼을 눌렀을때  */
 		
 		$(document).on("click", ".btnP", function(){
@@ -186,14 +215,14 @@ if (member == null) {
 	
 	<div class="text-left">
 		<h4> 가게를 방문할 수 있도록 위치를 등록하세요</h4>
-		<input type="text" id="sample3_postcode" placeholder="우편번호" name="post_code">
+		<input type="text" id="sample3_postcode" placeholder="우편번호" name="post_code" required>
 		<input type="button" onclick="sample3_execDaumPostcode()"
 			value="우편번호 찾기">
 		<br>
-		<input type="text" id="sample3_address" placeholder="주소" name="addr">
+		<input type="text" id="sample3_address" placeholder="주소" name="addr" required>
 		<br>
-		<input type="text" id="sample3_detailAddress" placeholder="상세주소" name="addr_detail">
-		<input type="text" id="sample3_extraAddress" placeholder="참고항목" name="local_extra">
+		<input type="text" id="sample3_detailAddress" placeholder="상호명" name="addr_detail" required>
+		<input type="text" id="sample3_extraAddress" placeholder="OO동" name="local_extra">
 		<!-- 	<button onclick="saveAddressToServer()">저장</button> -->
 	
 		<div id="wrap"

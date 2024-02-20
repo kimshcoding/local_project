@@ -21,7 +21,7 @@ if (member != null) {
 
 	Connection conn = null;
 	PreparedStatement psmt = null;
-	String url = "jdbc:mysql://localhost:3306/localboard";
+	 String url = "jdbc:mysql://localhost:3306/localboard";
 	String user = "cteam";
 	String pass = "1234";
 
@@ -30,8 +30,8 @@ if (member != null) {
 		conn = DriverManager.getConnection(url, user, pass);
 
 		String sql = "INSERT INTO comment( " + "   board_id " + " , created_by " + " , content " + " , created_ip "
-		+ " , created_at ) VALUES( " + "   ?" + " , ?" + " , ?" + " , 1.0" // IP test                        
-		+ " , now()) ";
+		+ " , created_at, board_code ) VALUES( " + "   ?" + " , ?" + " , ?" + " , 1.0" // IP test                        
+		+ " , now(), 'F') ";
 
 		psmt = conn.prepareStatement(sql);
 		psmt.setInt(1, comment.getBoardId());

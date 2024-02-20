@@ -1,6 +1,7 @@
 package local.vo;
 
 public class BoardReport {
+	private int boardReportId;
 	private int boardId;
 	private int createdBy;
 	private String createdIp;
@@ -14,6 +15,14 @@ public class BoardReport {
 	private int boardNo;		//신고 게시글 번호
 	
 	
+	
+	
+	public int getBoardReportId() {
+		return boardReportId;
+	}
+	public void setBoardReportId(int boardReportId) {
+		this.boardReportId = boardReportId;
+	}
 	public int getBoardId() {
 		return boardId;
 	}

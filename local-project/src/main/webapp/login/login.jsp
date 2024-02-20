@@ -1,6 +1,5 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8"
 	pageEncoding="UTF-8"%>
-	
 <!DOCTYPE html>
 <html>
 <head>
@@ -71,14 +70,12 @@
 							<br>
 							<button type="submit" class="btn btn-primary">로그인</button>
 						</form>
+						<a href="forgotPassword.jsp">비밀번호를 잊어버렸습니다.</a>
 					</div>
 				</div>
 			</div>
 		</div>
 	</section>
-
-
-
 
 	<!-- end  login section -->
 

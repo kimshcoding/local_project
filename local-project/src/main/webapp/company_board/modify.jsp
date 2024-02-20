@@ -18,8 +18,8 @@ if (lbIdParam != null && !lbIdParam.equals("")) {
 Connection conn = null;
 PreparedStatement psmt = null;
 ResultSet rs = null;
-/* String url = "jdbc:mysql://192.168.0.88:3306/localboard"; */
 String url = "jdbc:mysql://localhost:3306/localboard"; 
+ /*  String url = "jdbc:mysql://localhost:3306/localboard";  */
 String user = "cteam";
 String pass = "1234";
 
@@ -171,7 +171,7 @@ try {
 								<span class="input-group-text" id="addon-wrapping">제목</span> 
 								<input type="text" class="form-control" value="<%=board.getTitle()%>"
 									aria-label="Username" aria-describedby="addon-wrapping"
-									name="title">
+									name="title" required>
 							</div>
 							<br>
 
@@ -179,7 +179,7 @@ try {
 								<span class="input-group-text justify-content-center">내용</span>
 								<textarea id="summernote" class="form-control"
 									aria-label="With textarea" placeholder="내용을 입력하세요." rows="10"
-									name="content"><%=board.getContent()%></textarea>
+									name="content"  ><%=board.getContent()%></textarea>
 
 								<script>
                                 $('#summernote').summernote({
@@ -282,13 +282,13 @@ $(document).ready(function() {
 	
 	<div class="text-left">
 		<h4> 가게를 방문할 수 있도록 위치를 등록하세요</h4>
-		<input type="text" id="sample3_postcode" placeholder="우편번호" name="postCode" value="<%=board.getPostCode()%>" >
+		<input type="text" id="sample3_postcode" placeholder="우편번호" name="postCode" value="<%=board.getPostCode()%>" required >
 		<input type="button" onclick="sample3_execDaumPostcode()"
 			value="우편번호 찾기">
 		<br>
-		<input type="text" id="sample3_address" placeholder="주소" name="addr" value="<%=board.getAddr()%>">
+		<input type="text" id="sample3_address" placeholder="주소" name="addr" value="<%=board.getAddr()%>" required>
 		<br>
-		<input type="text" id="sample3_detailAddress" placeholder="상세주소" name="addrDetail" value="<%=board.getAddrDetail()%>">
+		<input type="text" id="sample3_detailAddress" placeholder="상세주소" name="addrDetail" value="<%=board.getAddrDetail()%>" required>
 		<input type="text" id="sample3_extraAddress" placeholder="참고항목" name="localExtra" value="<%=board.getLocalExtra()%>">
 		<!-- 	<button onclick="saveAddressToServer()">저장</button> -->
 	
