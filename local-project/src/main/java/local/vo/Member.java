@@ -20,10 +20,17 @@ public class Member extends Reply {
 	private String modifiedIp;		// 수정한 사람 IP
 	private String profilephoto;	// 프로필 사진
 	private String addrExtra;      // 참고항목(OO동)
-	private int reportCount;		// 신고된 횟수
+	private int reportCount;		// 신고한 횟수
+	private int reportedCount;		// 신고된 횟수
 	
 
 	
+	public int getReportedCount() {
+		return reportedCount;
+	}
+	public void setReportedCount(int reportedCount) {
+		this.reportedCount = reportedCount;
+	}
 	public int getReportCount() {
 		return reportCount;
 	}

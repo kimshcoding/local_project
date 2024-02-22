@@ -21,8 +21,19 @@ try {
     Class.forName("com.mysql.cj.jdbc.Driver");
     conn = DriverManager.getConnection(url, user, pass);
 
-    String sql = "SELECT member_id, email, nicknm, phone, status, created_at, stop_reason, stop_start_date, stop_end_date, report_count "
-               + "FROM member WHERE status <> 'quit' ORDER BY created_at DESC "; // quit 값을 제외하고 최신순 결과를 조회
+    String sql = " SELECT member_id, "
+    		   + " email, "
+    		   + "nicknm, "
+    		   + " phone, "
+    		   + " status, "
+    		   + " created_at, "
+    		   + " stop_reason, "
+    		   + " stop_start_date, "
+    		   + " stop_end_date, "
+    		   + " report_count, " // 신고한 횟수
+    		   + " reported_count " // 신고된 횟수
+        	   + " FROM member WHERE status <> 'quit' "
+        	   + " ORDER BY created_at DESC "; // quit 값을 제외하고 최신순 결과를 조회
               
     psmt = conn.prepareStatement(sql);
     rs = psmt.executeQuery();
@@ -38,7 +49,8 @@ try {
         member.setStopReason(rs.getString("stop_reason"));
         member.setStopStartDate(rs.getString("stop_start_date"));
         member.setStopEndDate(rs.getString("stop_end_date"));
-        member.setReportCount(rs.getInt("report_count"));  //신고된 횟수
+        member.setReportCount(rs.getInt("report_count"));  //신고한 횟수
+        member.setReportedCount(rs.getInt("reported_count"));  //신고된 횟수
 
         mlist.add(member);
     }
@@ -123,7 +135,8 @@ try {
                                 <th class="col-2">정지사유</th>
                                 <th class="col-1">정지시작일</th>
                                 <th class="col-1">정지종료일</th>
-                                <th class="col-1">신고건</th>
+                                <th class="col-1">신고한횟수</th>
+                                <th class="col-1">신고된횟수</th>
                                 <th class="col-2">처리</th>
                             </tr>
                         </thead>
@@ -142,6 +155,7 @@ try {
                                 <td class="col-1"><%=member.getStopStartDate()%></td>
                                 <td class="col-1"><%=member.getStopEndDate()%></td>                           
                                 <td class="col-1"><%=member.getReportCount()%></td>
+                                <td class="col-1"><%=member.getReportedCount()%></td>
                                 <td class="col-2">
                                     <!-- 모달을 트리거하는 버튼 -->
                                     <button type="button" class="btn btn-danger" data-toggle="modal" data-target="#myModal_<%=member.getMemberId()%>">수정</button>

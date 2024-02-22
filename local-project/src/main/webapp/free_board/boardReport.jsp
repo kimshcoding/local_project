@@ -30,30 +30,20 @@
         int memberId = 0;
         if(memberIdParam != null && !memberIdParam.equals("")){
         	memberId = Integer.parseInt(memberIdParam);
-        }
- 		// 신고된 사람
-        String createBydParam = request.getParameter("createdBy");
-        int createdBy = 0;
-        if(createBydParam != null && !createBydParam.equals("")){
-        	createdBy = Integer.parseInt(createBydParam);
-        }
-        
-        
-        
+        }            
         
         String reportReason = request.getParameter("reportReason");
   
         
         String sql = "INSERT INTO board_report "
-                + "(board_id, created_by, created_ip, created_at, modified_by, modified_ip, modified_at, reason, board_code, board_no) "
-                + "VALUES(?, ?, '1.0', NOW(), ?, '1.0', NOW(), ?, 'F', ?)";
+                + "(board_id, created_by, created_ip, created_at, modified_ip, modified_at, reason, board_code, board_no) "
+                + "VALUES(?, ?, '1.0', NOW(), '1.0', NOW(), ?, 'F', ?)";
 
         psmt = conn.prepareStatement(sql);
         psmt.setInt(1, boardId); 		 //board_id
         psmt.setInt(2, memberId);		 //created_by = 신고한 사람
-        psmt.setInt(3, createdBy); 		 //modified_by = 신고된 사람
-        psmt.setString(4, reportReason); //reason
-        psmt.setInt(5, boardId);		 //board_no
+        psmt.setString(3, reportReason); //reason
+        psmt.setInt(4, boardId);		 //board_no
 
         int result = psmt.executeUpdate();
 

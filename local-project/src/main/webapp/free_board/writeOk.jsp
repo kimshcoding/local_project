@@ -38,7 +38,7 @@
 
     Connection conn = null;
     PreparedStatement psmt = null;
-    String url = "jdbc:mysql://192.168.0.88/localboard";
+    String url = "jdbc:mysql://localhost/localboard";
     String user = "cteam";
     String pass = "1234";
 

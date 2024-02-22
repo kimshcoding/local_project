@@ -644,7 +644,7 @@ function toggleLike(boardId, button) {
 									<div class="modal-footer">
 										<button type="button" class="btn btn-secondary"
 											data-dismiss="modal">취소</button>
-										<button onclick="submitReport()" type="button"
+										<button onclick="submitReport(<%=member.getMemberId() %>)" type="button"
 											class="btn btn-danger">신고하기</button>
 									</div>
 								</div>
@@ -653,13 +653,12 @@ function toggleLike(boardId, button) {
 					</div>
 					<script>
     // 신고하기 
-    function submitReport() {
+    function submitReport(memberId) {
       // reportReason 값을 가져오기
       var reportReason = $("#reportReason").val();
 
       // 게시글 정보
       var boardId = '<%=board.getBoardId()%>';
-      var createdBy = '<%=board.getCreatedBy()%>';
 
       // AJAX를 사용하여 비동기적으로 서버로 전송
       $.ajax({
@@ -668,7 +667,7 @@ function toggleLike(boardId, button) {
         data: {
           'reportReason': reportReason,
           'boardId': boardId,
-          'createdBy': createdBy
+          'memberId': memberId // 신고한사람
         },
         success: function (response) {
           console.log(response);

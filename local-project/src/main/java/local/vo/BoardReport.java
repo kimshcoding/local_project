@@ -13,10 +13,24 @@ public class BoardReport {
 	private String status;
 	private char boardCode;		//신고 게시글 구분코드
 	private int boardNo;		//신고 게시글 번호
+	private int reporterCreatedBy;
+	private int reportedCreatedBy;
 	
 	
 	
 	
+	public int getReporterCreatedBy() {
+		return reporterCreatedBy;
+	}
+	public void setReporterCreatedBy(int reporterCreatedBy) {
+		this.reporterCreatedBy = reporterCreatedBy;
+	}
+	public int getReportedCreatedBy() {
+		return reportedCreatedBy;
+	}
+	public void setReportedCreatedBy(int reportedCreatedBy) {
+		this.reportedCreatedBy = reportedCreatedBy;
+	}
 	public int getBoardReportId() {
 		return boardReportId;
 	}

@@ -27,26 +27,34 @@ try {
     int test = member.getMemberId();
 
 
-    String sql = "SELECT board_report_id, board_id, created_by, created_at, reason, status, board_code, modified_by "
-               + "FROM board_report ORDER BY created_at DESC ";
-              
-    psmt = conn.prepareStatement(sql);
-    rs = psmt.executeQuery();
+    String sql = " SELECT br.board_report_id, "
+          	   + " br.board_id, "
+          	   + " br.created_by AS reporter_created_by, " // 신고한 사람
+           	   + " br.created_at, "
+           	   + " br.reason, "
+           	   + " br.status, "
+           	   + " br.board_code, "
+               + " b.created_by AS reported_created_by" // 신고된 사람
+           	   + " FROM board_report br "
+               + " JOIN board b ON br.board_id = b.board_id "
+           	   + " ORDER BY br.created_at DESC ";
 
-    while (rs.next()) {
-    	BoardReport boardreport = new BoardReport();
-    	boardreport.setBoardReportId(rs.getInt("board_report_id"));
-    	boardreport.setBoardId(rs.getInt("board_id"));
-    	boardreport.setCreatedBy(rs.getInt("created_by"));
-    	boardreport.setCreatedAt(rs.getString("created_at"));
-    	boardreport.setReason(rs.getString("reason"));
-    	boardreport.setStatus(rs.getString("status"));
-    	boardreport.setBoardCode(rs.getString("board_code").charAt(0));
-    	boardreport.setModifiedBy(rs.getInt("modified_by"));
-      	
+psmt = conn.prepareStatement(sql);
+rs = psmt.executeQuery();
 
-    	brlist.add(boardreport);
-    }
+while (rs.next()) {
+    BoardReport boardreport = new BoardReport();
+    boardreport.setBoardReportId(rs.getInt("board_report_id"));
+    boardreport.setBoardId(rs.getInt("board_id"));
+    boardreport.setReporterCreatedBy(rs.getInt("reporter_created_by")); // 신고한 사람
+    boardreport.setCreatedAt(rs.getString("created_at"));
+    boardreport.setReason(rs.getString("reason"));
+    boardreport.setStatus(rs.getString("status"));
+    boardreport.setBoardCode(rs.getString("board_code").charAt(0));
+    boardreport.setReportedCreatedBy(rs.getInt("reported_created_by")); // 신고된 사람
+
+    brlist.add(boardreport);
+}
   
 
 } catch (Exception e) {
@@ -136,8 +144,8 @@ try {
 							%>
 								<tr>
 									<td><%= boardreport.getBoardReportId()%></td>
-									<td><%= boardreport.getCreatedBy()%></td>
-									<td><%= boardreport.getModifiedBy()%></td> <!-- 신고된 회원 -->
+									<td><%= boardreport.getReporterCreatedBy()%></td>
+									<td><%= boardreport.getReportedCreatedBy()%></td> <!-- 신고된 회원 -->
 									<td><%= boardreport.getCreatedAt()%></td>
 									<td><%= boardreport.getBoardCode()%></td>
 									<td><%= boardreport.getBoardId()%></td>

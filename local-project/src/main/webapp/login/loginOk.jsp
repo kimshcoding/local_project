@@ -8,6 +8,9 @@
 <%@ page import="java.text.SimpleDateFormat"%>
 
 <%
+
+
+
 String email = request.getParameter("email");
 String password = request.getParameter("password");
 
@@ -59,19 +62,35 @@ try {
     if (rs != null)
         rs.close();
 
-    // 현재 로그인한 회원의 report_count 업데이트
-    String updateSql = "UPDATE member m "
-        + "SET m.report_count = ( "
-        + "    SELECT COUNT(*) "
-        + "    FROM board_report br "
-        + "    WHERE br.modified_by = m.member_id " // 신고된 회원 신고횟수 업데이트
-        + " ) "
-        + "WHERE m.member_id = ? ";
+    // 현재 로그인한 회원의 신고한 횟수 업데이트
+    String updatereportSql = " UPDATE member m "
+       				 + " SET m.report_count = ( "
+       				 + " SELECT COUNT(*) "
+        			 + " FROM board_report br "
+       				 + " WHERE br.created_by = m.member_id " // 신고한 회원 신고횟수 업데이트
+       				 + " ) "
+       			     + " WHERE m.member_id = ? ";
 
-    psmt = conn.prepareStatement(updateSql);
+    psmt = conn.prepareStatement(updatereportSql);
     psmt.setInt(1, member.getMemberId());
     psmt.executeUpdate();
 
+ 	// 현재 로그인한 회원의 신고된 횟수 업데이트
+    String updatereportedSql = " UPDATE member m "
+      				 		 + " SET m.reported_count = ( "
+       						 + " SELECT COUNT(*) "
+       						 + " FROM board b "
+      				 		 + " WHERE b.created_by = m.member_id " // 신고된 회원 신고횟수 업데이트
+      				 		 + " ) "
+       				 		 + " WHERE m.member_id = ? ";
+
+    psmt = conn.prepareStatement(updatereportedSql);
+    psmt.setInt(1, member.getMemberId());
+    psmt.executeUpdate();
+    
+    
+    
+    
     // 현재 로그인한 회원의 신고된 횟수가 n번 이상이면 경고창 띄우기
     String warningsCountSql = "SELECT report_count FROM member WHERE member_id = ? ";
 
